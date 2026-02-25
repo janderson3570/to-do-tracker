@@ -32,8 +32,13 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-top: env(safe-area-inset-top, 0px);
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --sidebar-bg: #0b1220;
+    --sidebar-surface: rgba(255,255,255,0.06);
+    --sidebar-border: rgba(255,255,255,0.10);
+    --sidebar-text: rgba(255,255,255,0.86);
+    --sidebar-text-dim: rgba(255,255,255,0.55);
   }
-  html, body { height: 100%; overflow: hidden; font-family: var(--font); background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.5; }
+  html, body { height: 100%; overflow: hidden; font-family: var(--font); background: var(--bg); color: var(--text); font-size: 16px; line-height: 1.55; }
   #app { display: flex; flex-direction: column; height: 100%; padding-top: var(--safe-top); }
 
   /* ===== LAYOUT ===== */
@@ -55,10 +60,10 @@
   .list-item:last-child { border-bottom: none; }
   .list-item.dragging { opacity: 0.5; }
   .list-item.drag-over { border-top: 2px solid var(--accent); }
-  .item-name { flex: 1; font-size: 15px; font-weight: 500; }
-  .item-desc { font-size: 13px; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+  .item-name { flex: 1; font-size: 16px; font-weight: 600; }
+  .item-desc { font-size: 14px; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .item-meta { display: flex; align-items: center; gap: 6px; }
-  .item-path { font-size: 12px; color: var(--text3); }
+  .item-path { font-size: 13px; color: var(--text3); }
 
   /* ===== BUTTONS ===== */
   .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--radius-sm); border: none; cursor: pointer; font-family: var(--font); font-size: 14px; font-weight: 500; transition: all 0.15s; }
@@ -86,10 +91,27 @@
 
   /* ===== ACCORDION ===== */
   .accordion { margin: 0; }
-  .accordion-header { display: flex; align-items: center; padding: 10px 14px; cursor: pointer; background: var(--surface2); border-bottom: 1px solid var(--border); gap: 8px; user-select: none; }
+  /* Higher-contrast accordion headers */
+  .accordion-header {
+    display: flex; align-items: center;
+    padding: 12px 14px;
+    cursor: pointer;
+    background: linear-gradient(180deg, #ffffff, #f7f7fb);
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+    user-select: none;
+  }
+  .accordion-header::before {
+    content: '';
+    width: 4px; height: 18px;
+    border-radius: 999px;
+    background: var(--accent);
+    opacity: 0.85;
+    flex-shrink: 0;
+  }
   .accordion-header svg.chevron { width: 16px; height: 16px; transition: transform 0.2s; flex-shrink: 0; }
   .accordion-header.open svg.chevron { transform: rotate(90deg); }
-  .accordion-header .acc-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text2); flex: 1; }
+  .accordion-header .acc-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #111827; flex: 1; }
   .accordion-body { display: none; }
   .accordion-body.open { display: block; }
 
@@ -111,15 +133,15 @@
   .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
   .form-textarea { resize: vertical; min-height: 80px; }
 
-  /* ===== BREADCRUMB — enhanced ===== */
+  /* ===== BREADCRUMB — more prominent ===== */
   .breadcrumb {
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
     gap: 5px;
     padding: 8px 14px 4px;
-    font-size: 15px;
-    font-weight: 500;
+    font-size: 17px;
+    font-weight: 600;
     color: var(--text2);
     overflow-x: auto;
     white-space: nowrap;
@@ -139,9 +161,91 @@
   .breadcrumb .crumb-current {
     color: var(--text);
     font-weight: 700;
-    font-size: 16px;
+    font-size: 18px;
     flex-shrink: 0;
   }
+
+  /* Project context banner — makes it obvious you're inside a project/subproject */
+  .project-context {
+    margin: 10px 12px 0;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .project-context-inner {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    background: linear-gradient(90deg, var(--accent-light), #ffffff);
+    border-left: 6px solid var(--accent);
+  }
+  .project-context-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.25;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .project-context-sub {
+    font-size: 13px;
+    color: var(--text2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .depth-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Low-key include-subprojects toggle row */
+  .scope-row {
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+  }
+  .scope-row .scope-label {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 600;
+    flex: 1;
+  }
+  .switch {
+    position: relative;
+    width: 44px; height: 24px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+    transition: transform 0.15s;
+  }
+  .switch.on { background: var(--accent); border-color: var(--accent); }
+  .switch.on::after { transform: translateX(20px); }
 
   /* ===== SYNC INDICATOR ===== */
   #sync-indicator { position: fixed; top: calc(var(--safe-top) + 4px); right: 12px; z-index: 999; display: flex; align-items: center; gap: 5px; font-size: 12px; padding: 3px 8px; border-radius: 20px; background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); border: 1px solid var(--border); color: var(--text2); box-shadow: var(--shadow); }
@@ -349,16 +453,17 @@
       bottom: 0;
       right: auto;
       height: 100%;
-      width: 240px;
+      width: 260px;
       flex-direction: column;
       border-top: none;
-      border-right: 1px solid var(--border);
-      padding: 20px 0;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      padding: 16px 12px;
       align-items: stretch;
+      gap: 10px;
       transform: translateX(-105%);
       transition: transform 0.18s ease;
       z-index: 500;
-      background: var(--surface);
+      background: var(--sidebar-bg);
     }
     body.nav-open #tab-bar { transform: translateX(0); }
 
@@ -372,8 +477,49 @@
     }
     body.nav-open #nav-overlay { display: block; }
 
-    .tab-btn { flex-direction: row; align-items: center; justify-content: flex-start; padding: 10px 16px; gap: 12px; font-size: 14px; border-radius: var(--radius-sm); margin: 2px 8px; }
-    .tab-btn.active { background: var(--accent-light); color: var(--accent); }
+    /* Website-style sidebar interior */
+    .tab-btn {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 12px 12px;
+      gap: 12px;
+      font-size: 14px;
+      border-radius: 12px;
+      margin: 0;
+      color: var(--sidebar-text-dim);
+      transition: background 0.15s, color 0.15s;
+    }
+    .tab-btn svg { width: 20px; height: 20px; opacity: 0.95; }
+    .tab-btn:hover { background: var(--sidebar-surface); color: var(--sidebar-text); }
+    .tab-btn.active {
+      background: rgba(79,70,229,0.22);
+      color: #ffffff;
+      border: 1px solid rgba(79,70,229,0.35);
+    }
+    .tab-btn.active svg { stroke: #ffffff; }
+
+    /* Sidebar brand area */
+    .sidebar-brand {
+      display: flex; flex-direction: column;
+      gap: 2px;
+      padding: 10px 10px 14px;
+      border-bottom: 1px solid var(--sidebar-border);
+      margin-bottom: 6px;
+      flex-shrink: 0;
+    }
+    .sidebar-brand .brand-title {
+      color: #ffffff;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      font-size: 16px;
+    }
+    .sidebar-brand .brand-sub {
+      color: var(--sidebar-text-dim);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
     #main-content { padding-bottom: 20px; }
     .fab { bottom: 24px; right: 24px; }
     .modal-overlay { align-items: center; }
@@ -390,6 +536,11 @@
 <body>
 <div id="app">
   <div id="tab-bar">
+    <!-- Desktop-only visual brand header; safe on mobile because sidebar is off-canvas -->
+    <div class="sidebar-brand" aria-hidden="true">
+      <div class="brand-title">WorkSpace</div>
+      <div class="brand-sub">Projects · Notes · Tasks</div>
+    </div>
     <button class="tab-btn active" data-tab="home" onclick="switchTab('home')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       Home
@@ -471,6 +622,12 @@ function loadState() {
   try {
     const raw = localStorage.getItem(DB_KEY);
     if (raw) { const p = JSON.parse(raw); state.projects = p.projects||[]; state.notes = p.notes||[]; state.tasks = p.tasks||[]; }
+    // Backward-compat: ensure note.description exists on all loaded notes
+    if (state.notes && Array.isArray(state.notes)) {
+      for (const n of state.notes) {
+        if (n && typeof n.description !== 'string') n.description = '';
+      }
+    }
   } catch(e) { console.error('[State] loadState failed', e); }
 }
 function savePrefs() {
@@ -601,8 +758,13 @@ function buildSearchIndex() {
   }
   for (const n of state.notes) {
     if (n.is_archived) continue;
-    // Strip HTML for search — use htmlToText()
-    idx.push({ type: 'note', id: n.id, text: (n.title + ' ' + htmlToText(n.content||'')).toLowerCase(), item: n });
+    // Strip HTML for search — use htmlToText(); also index description
+    idx.push({
+      type: 'note',
+      id: n.id,
+      text: (n.title + ' ' + (n.description||'') + ' ' + htmlToText(n.content||'')).toLowerCase(),
+      item: n
+    });
   }
   for (const t of state.tasks) {
     if (t.is_archived) continue;
@@ -734,9 +896,12 @@ function renderProject(projectId) {
   });
 
   const scopeNotes = window._notesScope || 'this';
-  const scopeTasks = window._tasksScope || 'this';
+  const scopeTasks = window._tasksScope || 'sub'; // keep current behavior: include subprojects by default
   const inclSubNotes = scopeNotes === 'sub';
   const inclSubTasks = scopeTasks === 'sub';
+
+  const depth = getDepth(projectId);
+  const depthLabel = depth === 0 ? 'Project' : `Subproject · Level ${depth + 1}`;
 
   const children = getChildren(projectId);
   const activeChildren = children.filter(c => !c.is_completed);
@@ -757,12 +922,20 @@ function renderProject(projectId) {
       <button class="btn-icon" onclick="showProjectMenu(event,'${p.id}','project')">${SVG.dots}</button>
     </div>
 
-    <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--border)">
-      ${checkBtn(p.is_completed, `toggleProjectComplete('${p.id}')`)}
-      <span style="font-size:18px;font-weight:700;flex:1;${p.is_completed?'text-decoration:line-through;color:var(--text3)':''}">${esc(p.name)}</span>
-      ${p.is_completed ? `<span class="done-badge">Done</span>` : ''}
+    <!-- Stronger "in a project" context banner -->
+    <div class="project-context">
+      <div class="project-context-inner">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+          ${checkBtn(p.is_completed, `toggleProjectComplete('${p.id}')`)}
+          <div style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1">
+            <div class="project-context-title ${p.is_completed?'done':''}">${esc(p.name)}</div>
+            <div class="project-context-sub">${esc(getProjectPath(projectId))}</div>
+          </div>
+        </div>
+        <span class="depth-badge">${esc(depthLabel)}</span>
+      </div>
+      ${p.description ? `<div style="padding:10px 14px;font-size:14px;color:var(--text2);border-top:1px solid var(--border)">${esc(p.description)}</div>` : ''}
     </div>
-    ${p.description ? `<div style="padding:8px 14px;font-size:14px;color:var(--text2);background:var(--surface);border-bottom:1px solid var(--border)">${esc(p.description)}</div>` : ''}
 
     <!-- NOTES ACCORDION -->
     <div class="card accordion" style="overflow:hidden">
@@ -772,10 +945,7 @@ function renderProject(projectId) {
         <button class="btn-icon" style="margin-left:4px" onclick="event.stopPropagation();showNewNoteModal('${projectId}')">${SVG.plus}</button>
       </div>
       <div class="accordion-body open" id="notes-body">
-        <div class="scope-toggle">
-          <button class="scope-btn ${!inclSubNotes?'active':''}" onclick="setScope('notes','this','${projectId}')">This project</button>
-          <button class="scope-btn ${inclSubNotes?'active':''}" onclick="setScope('notes','sub','${projectId}')">Including subprojects</button>
-        </div>
+        ${renderScopeRow('notes', inclSubNotes, projectId)}
         <div id="notes-list">
           ${notes.length === 0 ? `<div class="empty-state"><p>No notes</p></div>` : ''}
           ${inclSubNotes ? renderNotesGrouped(projectId, notes) : notes.map(n => renderNoteRow(n, projectId)).join('')}
@@ -815,11 +985,7 @@ function renderProject(projectId) {
         <button class="btn-icon" style="margin-left:4px" onclick="event.stopPropagation();showNewTaskModal('${projectId}')">${SVG.plus}</button>
       </div>
       <div class="accordion-body open" id="tasks-body">
-        <div class="scope-toggle">
-          <button class="scope-btn ${!inclSubTasks?'active':''}" onclick="setScope('tasks','this','${projectId}')">This project</button>
-          <button class="scope-btn ${inclSubTasks?'active':''}" onclick="setScope('tasks','sub','${projectId}')">Including subprojects</button>
-        </div>
-        ${activeTasks.length === 0 ? '' : `<div class="section-label">Active</div>`}
+        ${renderScopeRow('tasks', inclSubTasks, projectId)}
         <div id="tasks-active-list">
           ${activeTasks.length === 0 ? `<div class="empty-state" style="padding:20px"><p>No active tasks</p></div>` :
             (inclSubTasks ? renderTasksGrouped(projectId, activeTasks) : activeTasks.map(t => renderTaskRow(t, projectId)).join(''))
@@ -841,6 +1007,21 @@ function renderProject(projectId) {
   setupDragDrop('subprojects-active-list', 'project');
   setupDragDrop('notes-list', 'note');
   setupDragDrop('tasks-active-list', 'task');
+}
+
+// Low-key toggle row generator (replaces the segmented control)
+function renderScopeRow(type, inclSub, projectId) {
+  const onClass = inclSub ? 'on' : '';
+  const nextScope = inclSub ? 'this' : 'sub';
+  return `
+    <div class="scope-row">
+      <span class="scope-label">Include subprojects</span>
+      <div class="switch ${onClass}" role="switch" aria-checked="${inclSub ? 'true' : 'false'}"
+           onclick="setScope('${type}','${nextScope}','${projectId}')"
+           title="Include subprojects">
+      </div>
+    </div>
+  `;
 }
 
 function renderNotesGrouped(projectId, notes) {
@@ -878,13 +1059,13 @@ function renderTasksGrouped(ownerProjectId, tasks) {
 }
 
 function renderNoteRow(n, projectId) {
-  const preview = htmlToText(n.content || '').slice(0, 80);
+  const desc = (n.description || '').trim();
   return `
     <div class="list-item" data-id="${n.id}" draggable="true">
       <div class="drag-handle">${SVG.drag}</div>
       <div style="flex:1;min-width:0;cursor:pointer" onclick="openNoteEditor('${n.id}')">
         <div class="item-name">${esc(n.title || 'Untitled')}</div>
-        ${preview ? `<div class="item-desc">${esc(preview)}</div>` : ''}
+        ${desc ? `<div class="item-desc">${esc(desc)}</div>` : ''}
       </div>
       <button class="btn-icon" onclick="showNoteMenu(event,'${n.id}')">${SVG.dots}</button>
     </div>
@@ -1517,13 +1698,17 @@ function deleteProject(projectId) {
 function showNewNoteModal(projectId) {
   showModal({
     title: 'New Note',
-    fields: [{ id: 'title', label: 'Title', type: 'text', required: true }],
+    fields: [
+      { id: 'title', label: 'Title', type: 'text', required: true },
+      { id: 'description', label: 'Description (optional)', type: 'text' },
+    ],
     onSave: (data) => {
       const siblings = state.notes.filter(n => n.project_id === projectId);
       const note = {
         id: genId(),
         project_id: projectId,
         title: data.title.trim(),
+        description: (data.description || '').trim(),
         content: '',
         is_archived: false,
         sort_order: nextSortOrder(siblings),
@@ -1564,6 +1749,15 @@ function openNoteEditor(noteId, findQuery='') {
     </div>
     <div class="editor-title-block">
       <input class="editor-title-large" id="note-title-input" placeholder="Note title…" value="${esc(n.title||'')}">
+      <div style="margin-top:6px">
+        <input
+          class="form-input"
+          id="note-desc-input"
+          placeholder="Description (optional)…"
+          value="${esc(n.description||'')}"
+          style="padding:8px 10px;font-size:14px;background:var(--surface2)"
+        >
+      </div>
     </div>
     <div class="editor-toolbar" id="note-toolbar">
       <button class="tool-btn" id="tb-bold" title="Bold"><b>B</b></button>
@@ -1620,6 +1814,13 @@ function openNoteEditor(noteId, findQuery='') {
   titleEl.addEventListener('input', () => scheduleNoteAutosave());
   titleEl.addEventListener('blur', () => { if (noteEditorState.isDirty) flushNoteAutosave(); });
 
+  // Autosave wiring — description
+  const descEl = document.getElementById('note-desc-input');
+  if (descEl) {
+    descEl.addEventListener('input', () => scheduleNoteAutosave());
+    descEl.addEventListener('blur', () => { if (noteEditorState.isDirty) flushNoteAutosave(); });
+  }
+
   // Autosave wiring — content
   contentEl.addEventListener('input', () => scheduleNoteAutosave());
   contentEl.addEventListener('blur', () => { if (noteEditorState.isDirty) flushNoteAutosave(); });
@@ -1651,13 +1852,16 @@ function flushNoteAutosave() {
   if (!n) return;
 
   const titleEl = document.getElementById('note-title-input');
+  const descEl = document.getElementById('note-desc-input');
   const contentEl = document.getElementById('note-content');
   if (!titleEl || !contentEl) return;
 
   const newTitle = titleEl.value.trim() || 'Untitled';
+  const newDesc  = (descEl ? descEl.value.trim() : '') || '';
   const newContent = contentEl.innerHTML || '';
 
   n.title = newTitle;
+  n.description = newDesc;
   n.content = newContent;
   n.updated_at = now();
   noteEditorState.isDirty = false;
@@ -1665,7 +1869,10 @@ function flushNoteAutosave() {
 
   saveState();
   // Single op per flush — not per keystroke
-  enqueueOp({ type: 'UPDATE_NOTE', payload: { id: n.id, title: n.title, content: n.content, updated_at: n.updated_at } });
+  enqueueOp({
+    type: 'UPDATE_NOTE',
+    payload: { id: n.id, title: n.title, description: n.description, content: n.content, updated_at: n.updated_at }
+  });
   setNoteSaveStatus('saved');
   console.log('[NoteEditor] Autosaved note:', noteId);
 
