@@ -341,13 +341,49 @@
 
   @media (min-width: 768px) {
     #app { flex-direction: row; }
-    #tab-bar { position: static; height: 100%; width: 220px; flex-direction: column; border-top: none; border-right: 1px solid var(--border); padding: 20px 0; align-items: stretch; }
+    /* Desktop: convert left nav into an overlay drawer that defaults hidden */
+    #tab-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: auto;
+      height: 100%;
+      width: 240px;
+      flex-direction: column;
+      border-top: none;
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      align-items: stretch;
+      transform: translateX(-105%);
+      transition: transform 0.18s ease;
+      z-index: 500;
+      background: var(--surface);
+    }
+    body.nav-open #tab-bar { transform: translateX(0); }
+
+    /* Drawer overlay */
+    #nav-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 450;
+      display: none;
+    }
+    body.nav-open #nav-overlay { display: block; }
+
     .tab-btn { flex-direction: row; align-items: center; justify-content: flex-start; padding: 10px 16px; gap: 12px; font-size: 14px; border-radius: var(--radius-sm); margin: 2px 8px; }
     .tab-btn.active { background: var(--accent-light); color: var(--accent); }
     #main-content { padding-bottom: 20px; }
     .fab { bottom: 24px; right: 24px; }
     .modal-overlay { align-items: center; }
     .modal-sheet { border-radius: var(--radius); max-height: 80vh; width: 460px; }
+  }
+
+  /* Hamburger button visibility: show only on desktop */
+  .nav-toggle { display: none; }
+  @media (min-width: 768px) {
+    .nav-toggle { display: inline-flex; }
   }
 </style>
 </head>
@@ -384,6 +420,7 @@
     <div id="screen-settings" class="screen" style="display:none"></div>
   </div>
 </div>
+<div id="nav-overlay" onclick="closeNavDrawer()"></div>
 <div id="note-editor" style="display:none"></div>
 <div id="modal-container"></div>
 <div id="context-menu-container"></div>
@@ -444,6 +481,7 @@ function loadPrefs() {
     const raw = localStorage.getItem(PREFS_KEY);
     if (raw) Object.assign(prefs, JSON.parse(raw));
     if (!prefs.clientId) { prefs.clientId = 'client_' + Math.random().toString(36).slice(2); savePrefs(); }
+    if (typeof prefs.navHidden !== 'boolean') { prefs.navHidden = true; savePrefs(); }
   } catch(e) {}
 }
 function saveQueue() {
@@ -600,6 +638,7 @@ function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 const SVG = {
   check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`,
   plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  menu: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>`,
   dots: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>`,
   chevron: `<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`,
   drag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="18" x2="15" y2="18"/></svg>`,
@@ -628,8 +667,13 @@ function renderHome() {
 
   screen.innerHTML = `
     <div class="screen-header">
+      <button class="btn-icon nav-toggle" onclick="toggleNavDrawer()" title="Menu">${SVG.menu}</button>
       <h1>Projects</h1>
       <button class="btn-icon" onclick="showNewProjectModal(null)" title="New Project">${SVG.plus}</button>
+    </div>
+    <div class="search-bar" style="background:var(--surface);border-bottom:1px solid var(--border);margin:0 0 6px 0">
+      <input id="home-search-input" class="search-input" placeholder="Search projects, notes, tasks…" onkeydown="handleHomeSearchKey(event)">
+      <button class="btn btn-primary" onclick="doHomeSearch()">Go</button>
     </div>
     <div id="home-active-list" class="card" style="overflow:hidden">
       ${active.length === 0 ? `<div class="empty-state"><p>No projects yet. Tap + to create one.</p></div>` : ''}
@@ -709,6 +753,7 @@ function renderProject(projectId) {
       <div style="flex:1;min-width:0">
         <div class="breadcrumb">${breadcrumbHtml}</div>
       </div>
+      <button class="btn-icon nav-toggle" onclick="toggleNavDrawer()" title="Menu">${SVG.menu}</button>
       <button class="btn-icon" onclick="showProjectMenu(event,'${p.id}','project')">${SVG.dots}</button>
     </div>
 
@@ -776,8 +821,9 @@ function renderProject(projectId) {
         </div>
         ${activeTasks.length === 0 ? '' : `<div class="section-label">Active</div>`}
         <div id="tasks-active-list">
-          ${activeTasks.length === 0 ? `<div class="empty-state" style="padding:20px"><p>No active tasks</p></div>` : ''}
-          ${activeTasks.map(t => renderTaskRow(t, projectId)).join('')}
+          ${activeTasks.length === 0 ? `<div class="empty-state" style="padding:20px"><p>No active tasks</p></div>` :
+            (inclSubTasks ? renderTasksGrouped(projectId, activeTasks) : activeTasks.map(t => renderTaskRow(t, projectId)).join(''))
+          }
         </div>
         ${doneTasks.length ? `
         <div class="accordion">
@@ -785,7 +831,7 @@ function renderProject(projectId) {
             ${SVG.chevron}<span class="acc-title">Completed (${doneTasks.length})</span>
           </div>
           <div class="accordion-body" id="tasks-done-list">
-            ${doneTasks.map(t => renderTaskRow(t, projectId)).join('')}
+            ${inclSubTasks ? renderTasksGrouped(projectId, doneTasks) : doneTasks.map(t => renderTaskRow(t, projectId)).join('')}
           </div>
         </div>` : ''}
       </div>
@@ -807,6 +853,26 @@ function renderNotesGrouped(projectId, notes) {
     const pName = pid === projectId ? 'This project' : getProjectPath(pid);
     html += `<div class="section-label">${esc(pName)}</div>`;
     for (const n of groups[pid]) html += renderNoteRow(n, pid);
+  }
+  return html;
+}
+
+function renderTasksGrouped(ownerProjectId, tasks) {
+  // Groups tasks by the project they belong to and labels each group clearly.
+  const ids = [ownerProjectId, ...getAllDescendantIds(ownerProjectId)];
+  const groups = {};
+  for (const t of tasks) {
+    if (!groups[t.project_id]) groups[t.project_id] = [];
+    groups[t.project_id].push(t);
+  }
+  let html = '';
+  for (const pid of ids) {
+    const g = groups[pid];
+    if (!g || g.length === 0) continue;
+    const label = (pid === ownerProjectId) ? 'This project' : getProjectPath(pid);
+    html += `<div class="section-label">${esc(label)}</div>`;
+    // Preserve existing sort order already applied by getProjectTasks()
+    for (const t of g) html += renderTaskRow(t, ownerProjectId);
   }
   return html;
 }
@@ -948,7 +1014,10 @@ function renderTodo() {
   }
 
   screen.innerHTML = `
-    <div class="screen-header"><h1>To-Do</h1></div>
+    <div class="screen-header">
+      <button class="btn-icon nav-toggle" onclick="toggleNavDrawer()" title="Menu">${SVG.menu}</button>
+      <h1>To-Do</h1>
+    </div>
     ${controlsHtml}
     ${listHtml}
     <div style="height:80px"></div>
@@ -1066,7 +1135,10 @@ function renderSearch(query='', results=null) {
   }
 
   screen.innerHTML = `
-    <div class="screen-header"><h1>Search</h1></div>
+    <div class="screen-header">
+      <button class="btn-icon nav-toggle" onclick="toggleNavDrawer()" title="Menu">${SVG.menu}</button>
+      <h1>Search</h1>
+    </div>
     <div class="search-bar">
       <input id="search-input" class="search-input" placeholder="Search projects, notes, tasks…" value="${esc(query)}" onkeydown="handleSearchKey(event)">
       <button class="btn btn-primary" onclick="doSearch()">Go</button>
@@ -1082,7 +1154,10 @@ function renderArchive() {
   const archivedTasks = state.tasks.filter(t => t.is_archived).sort((a,b) => a.sort_order - b.sort_order);
 
   screen.innerHTML = `
-    <div class="screen-header"><h1>Archive</h1></div>
+    <div class="screen-header">
+      <button class="btn-icon nav-toggle" onclick="toggleNavDrawer()" title="Menu">${SVG.menu}</button>
+      <h1>Archive</h1>
+    </div>
     <div class="card accordion" style="overflow:hidden">
       <div class="accordion-header open" onclick="toggleAccordion(this)">
         ${SVG.chevron}<span class="acc-title">Projects (${archivedProjects.length})</span>
@@ -1157,7 +1232,10 @@ function renderSettings() {
   const screen = document.getElementById('screen-settings');
   const qLen = syncQueue.length;
   screen.innerHTML = `
-    <div class="screen-header"><h1>Settings</h1></div>
+    <div class="screen-header">
+      <button class="btn-icon nav-toggle" onclick="toggleNavDrawer()" title="Menu">${SVG.menu}</button>
+      <h1>Settings</h1>
+    </div>
     <div class="settings-section">
       <h3>Google Sheets Sync</h3>
       <div class="settings-row">
@@ -1220,10 +1298,41 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function isDesktop() {
+  return window.matchMedia && window.matchMedia('(min-width: 768px)').matches;
+}
+
+function applyNavDrawerState() {
+  // Only meaningful on desktop; on mobile the bottom tab bar is used unchanged.
+  if (!isDesktop()) {
+    document.body.classList.remove('nav-open');
+    return;
+  }
+  if (prefs.navHidden) document.body.classList.remove('nav-open');
+  else document.body.classList.add('nav-open');
+}
+
+function toggleNavDrawer() {
+  if (!isDesktop()) return;
+  prefs.navHidden = !prefs.navHidden;
+  savePrefs();
+  applyNavDrawerState();
+}
+
+function closeNavDrawer() {
+  if (!isDesktop()) return;
+  prefs.navHidden = true;
+  savePrefs();
+  applyNavDrawerState();
+}
+
 function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+
+  // On desktop, selecting a tab closes the drawer for focus
+  if (isDesktop()) closeNavDrawer();
 
   if (tab === 'home') {
     projectNavStack = [];
@@ -1257,7 +1366,8 @@ function openProject(projectId) {
   if (!projectNavStack.includes(projectId)) projectNavStack.push(projectId);
   else { const idx = projectNavStack.indexOf(projectId); projectNavStack = projectNavStack.slice(0, idx + 1); }
   window._notesScope = 'this';
-  window._tasksScope = 'this';
+  // Default per requirements: show current project tasks + subproject tasks
+  window._tasksScope = 'sub';
   renderProject(projectId);
 }
 
@@ -2030,6 +2140,19 @@ function doSearch() {
   renderSearch(q, results);
 }
 
+function handleHomeSearchKey(event) { if (event.key === 'Enter') doHomeSearch(); }
+function doHomeSearch() {
+  const q = document.getElementById('home-search-input')?.value || '';
+  if (!q.trim()) return;
+  // Route to Search tab and reuse the existing segmented search renderer
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'search'));
+  document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+  currentTab = 'search';
+  document.getElementById('screen-search').style.display = '';
+  const results = searchQuery(q);
+  renderSearch(q, results);
+}
+
 // ---- SETTINGS ----
 function promptSetting(key, label, current, type='text') {
   const val = prompt(label + (current ? ` (current: ${type==='password'?'[hidden]':current})` : ''), type==='password'?'':current);
@@ -2248,12 +2371,18 @@ function init() {
   loadQueue();
   loadTodoPrefs();
   updateSyncIndicator();
+  applyNavDrawerState();
   switchTab('home');
   if (syncQueue.length > 0) scheduleSyncFlush(1000);
   console.log('[App] Initialized. Projects:', state.projects.length, 'Notes:', state.notes.length, 'Tasks:', state.tasks.length);
 }
 
 init();
+
+window.addEventListener('resize', () => {
+  // When crossing desktop/mobile breakpoint, normalize drawer state
+  applyNavDrawerState();
+});
 </script>
 </body>
 </html>
