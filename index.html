@@ -1107,8 +1107,10 @@ function setScope(type, scope, projectId) {
 
 // ---- PROJECT CRUD ----
 function showNewProjectModal(parentId) {
+  console.log('[Modal] showNewProjectModal called, parentId:', parentId);
   const depth = parentId ? getDepth(parentId) + 1 : 0;
   if (depth >= 4) { showToast('Maximum depth reached (4 levels)'); return; }
+
   showModal({
     title: parentId ? 'New Subproject' : 'New Project',
     fields: [
@@ -1116,27 +1118,36 @@ function showNewProjectModal(parentId) {
       { id: 'description', label: 'Description', type: 'textarea' },
     ],
     onSave: (data) => {
-      const pid = parentId;
-      const siblings = pid
-        ? state.projects.filter(p => p.parent_id === pid)
-        : state.projects.filter(p => !p.parent_id);
-      const project = {
-        id: genId(),
-        parent_id: pid || null,
-        name: data.name.trim(),
-        description: data.description?.trim() || '',
-        is_completed: false,
-        completed_at: null,
-        is_archived: false,
-        archived_at: null,
-        sort_order: nextSortOrder(siblings),
-        created_at: now(),
-        updated_at: now(),
-      };
-      state.projects.push(project);
-      saveState();
-      enqueueOp({ type: 'CREATE_PROJECT', payload: project });
-      refreshCurrentView();
+      try {
+        console.log('[Project] Create started with data:', data);
+        const pid = parentId || null;
+        const siblings = pid
+          ? state.projects.filter(p => p.parent_id === pid)
+          : state.projects.filter(p => !p.parent_id);
+        const project = {
+          id: genId(),
+          parent_id: pid,
+          name: data.name.trim(),
+          description: data.description?.trim() || '',
+          is_completed: false,
+          completed_at: null,
+          is_archived: false,
+          archived_at: null,
+          sort_order: nextSortOrder(siblings),
+          created_at: now(),
+          updated_at: now(),
+        };
+        console.log('[Project] Object created:', project);
+        state.projects.push(project);
+        console.log('[Project] Pushed to state. Total projects:', state.projects.length);
+        saveState();
+        enqueueOp({ type: 'CREATE_PROJECT', payload: project });
+        refreshCurrentView();
+        console.log('[Project] Render complete.');
+      } catch (error) {
+        console.error('PROJECT CREATE FAILED', error);
+        showToast('Error creating project: ' + error.message);
+      }
     }
   });
 }
@@ -1627,6 +1638,7 @@ function showModal({ title, fields, onSave }) {
 }
 
 function submitModal() {
+  console.log('[Modal] Save clicked');
   const fields = window._modalFields || [];
   const data = {};
   for (const f of fields) {
@@ -1636,11 +1648,25 @@ function submitModal() {
   for (const f of fields) {
     if (f.required && !data[f.id]?.trim()) {
       showToast(f.label + ' is required');
+      console.warn('[Modal] Validation failed: required field empty:', f.id);
       return;
     }
   }
+
+  // *** FIX: Capture callback BEFORE closeModal() nulls it ***
+  const callback = window._modalCallback;
   closeModal();
-  if (window._modalCallback) window._modalCallback(data);
+
+  if (callback) {
+    try {
+      callback(data);
+    } catch (error) {
+      console.error('PROJECT CREATE FAILED', error);
+      showToast('Error: ' + error.message);
+    }
+  } else {
+    console.warn('[Modal] No callback registered — nothing to execute.');
+  }
 }
 
 function closeModal(event) {
