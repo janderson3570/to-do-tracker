@@ -1771,10 +1771,27 @@ function promptSetting(key, label, current, type='text') {
 
 function testConnection() {
   if (!prefs.scriptUrl) { showToast('Set Apps Script URL first'); return; }
+  // Remind user to use /exec not /dev URL.
+  if (prefs.scriptUrl.includes('/dev')) {
+    showToast('⚠ Use the /exec URL, not /dev');
+    console.warn('[Sync] /dev URL detected — switch to /exec deployment URL');
+  }
   showToast('Testing…');
-  apiCall({ action: 'ping' }).then(r => {
-    showToast(r.ok ? '✓ Connected' : '✗ Error: ' + (r.error||'Unknown'));
-  }).catch(e => showToast('✗ ' + e.message));
+  // token + clientId are injected by apiCall() automatically.
+  apiCall({ action: 'ping' })
+    .then(r => {
+      if (r.ok) {
+        showToast('✓ Connected successfully');
+        console.log('[Sync] Ping OK');
+      } else {
+        showToast('✗ Error: ' + (r.error || 'Unknown'));
+        console.error('[Sync] Ping failed:', r.error);
+      }
+    })
+    .catch(e => {
+      showToast('✗ Fetch failed — check URL and CORS');
+      console.error('[Sync] testConnection error:', e);
+    });
 }
 
 function flushQueue() {
@@ -1994,17 +2011,28 @@ function updateSyncIndicator(state_='') {
 
 async function apiCall(body) {
   if (!prefs.scriptUrl) throw new Error('No Apps Script URL configured');
-  const resp = await fetch(prefs.scriptUrl, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Token': prefs.apiToken,
-      'X-Client-ID': prefs.clientId,
-    },
-    body: JSON.stringify(body),
-  });
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  // Merge auth into body — no custom headers so no CORS preflight is triggered.
+  const payload = {
+    ...body,
+    token: prefs.apiToken,
+    clientId: prefs.clientId,
+  };
+  let resp;
+  try {
+    resp = await fetch(prefs.scriptUrl, {
+      method: 'POST',
+      // text/plain keeps the request "simple" — no preflight OPTIONS request.
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+  } catch (networkErr) {
+    console.error('[Sync] Fetch failed. URL:', prefs.scriptUrl, 'Error:', networkErr);
+    throw networkErr;
+  }
+  if (!resp.ok) {
+    console.error('[Sync] HTTP error. Status:', resp.status, 'URL:', prefs.scriptUrl);
+    throw new Error(`HTTP ${resp.status}`);
+  }
   return resp.json();
 }
 
@@ -2023,27 +2051,38 @@ const SS = SpreadsheetApp.getActiveSpreadsheet();
 
 function doPost(e) {
   try {
-    const token = e.parameter?.token || (e.postData?.contents ? JSON.parse(e.postData.contents)?.token : null);
-    // Also check header via custom approach - Apps Script doesn't expose headers easily,
-    // so pass token in body for simplicity.
+    // Apps Script receives text/plain body in e.postData.contents regardless of content-type.
     const body = JSON.parse(e.postData.contents);
-    if (body.action !== 'ping' && !validateToken(body)) {
+    const action = body.action;
+
+    // ping is unauthenticated so the client can test connectivity before storing a token.
+    if (action === 'ping') {
+      return jsonResp({ ok: true });
+    }
+
+    if (!validateToken(body)) {
       return jsonResp({ ok: false, error: 'Unauthorized' });
     }
-    const action = body.action;
-    if (action === 'ping') return jsonResp({ ok: true });
+
     if (action === 'applyOp') return jsonResp(applyOp(body.op));
-    if (action === 'getAll') return jsonResp({ ok: true, data: getAllData() });
-    return jsonResp({ ok: false, error: 'Unknown action' });
-  } catch(err) {
+    if (action === 'getAll')  return jsonResp({ ok: true, data: getAllData() });
+
+    return jsonResp({ ok: false, error: 'Unknown action: ' + action });
+
+  } catch (err) {
+    console.error('doPost exception:', err);          // visible in Apps Script execution log
     return jsonResp({ ok: false, error: err.toString() });
   }
 }
 
-function validateToken(body) { return body.token === API_TOKEN; }
+function validateToken(body) {
+  // Token travels in the request body, never in headers.
+  return typeof body.token === 'string' && body.token === API_TOKEN;
+}
 
 function jsonResp(data) {
-  return ContentService.createTextOutput(JSON.stringify(data))
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
