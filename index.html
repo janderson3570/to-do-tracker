@@ -111,10 +111,37 @@
   .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
   .form-textarea { resize: vertical; min-height: 80px; }
 
-  /* ===== BREADCRUMB ===== */
-  .breadcrumb { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; padding: 8px 14px 4px; font-size: 13px; color: var(--text2); }
-  .breadcrumb a { color: var(--accent); text-decoration: none; }
-  .breadcrumb span.sep { color: var(--text3); }
+  /* ===== BREADCRUMB — enhanced ===== */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 5px;
+    padding: 8px 14px 4px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text2);
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .breadcrumb::-webkit-scrollbar { display: none; }
+  .breadcrumb a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span.sep { color: var(--text3); flex-shrink: 0; font-size: 14px; }
+  .breadcrumb .crumb-current {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
 
   /* ===== SYNC INDICATOR ===== */
   #sync-indicator { position: fixed; top: calc(var(--safe-top) + 4px); right: 12px; z-index: 999; display: flex; align-items: center; gap: 5px; font-size: 12px; padding: 3px 8px; border-radius: 20px; background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); border: 1px solid var(--border); color: var(--text2); box-shadow: var(--shadow); }
@@ -135,19 +162,140 @@
 
   /* ===== NOTE EDITOR ===== */
   #note-editor { position: fixed; inset: 0; background: var(--surface); z-index: 300; display: flex; flex-direction: column; padding-top: var(--safe-top); }
-  #note-editor .editor-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
-  #note-editor .editor-title-input { flex: 1; font-size: 16px; font-weight: 600; border: none; outline: none; background: transparent; font-family: var(--font); }
-  #note-editor .editor-body { flex: 1; overflow-y: auto; padding: 14px; }
-  #note-editor .editor-content { width: 100%; border: none; outline: none; background: transparent; font-family: var(--font); font-size: 15px; line-height: 1.7; resize: none; min-height: 300px; }
-  .editor-find-bar { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--surface2); border-top: 1px solid var(--border); }
+  #note-editor .editor-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+
+  /* Title block — big prominent title */
+  .editor-title-block { padding: 12px 16px 4px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .editor-title-large {
+    width: 100%;
+    font-size: 22px;
+    font-weight: 700;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: var(--font);
+    color: var(--text);
+    padding: 4px 0;
+    line-height: 1.3;
+  }
+  .editor-title-large::placeholder { color: var(--text3); }
+
+  /* Toolbar */
+  .editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .tool-btn {
+    padding: 5px 9px;
+    font-size: 13px;
+    font-family: var(--font);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text);
+    transition: background 0.1s, border-color 0.1s;
+    line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 32px;
+  }
+  .tool-btn:hover { background: var(--accent-light); border-color: var(--accent); }
+  .tool-btn:active { background: var(--accent); color: #fff; }
+  .tool-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+  .save-status {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text3);
+    flex-shrink: 0;
+    min-width: 56px;
+    text-align: right;
+  }
+  .save-status.saving { color: var(--warn); }
+  .save-status.saved  { color: var(--success); }
+
+  #note-editor .editor-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+
+  /* Rich content area */
+  .editor-content.rich {
+    outline: none;
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--text);
+    min-height: 300px;
+    word-break: break-word;
+  }
+  .editor-content.rich ul,
+  .editor-content.rich ol { padding-left: 22px; margin: 6px 0; }
+  .editor-content.rich li { margin: 2px 0; }
+  .editor-content.rich b, .editor-content.rich strong { font-weight: 700; }
+  .editor-content.rich u { text-decoration: underline; }
+  .editor-content.rich p { margin: 0 0 6px; }
+  .editor-content.rich:empty::before { content: 'Write your note here…'; color: var(--text3); pointer-events: none; }
+
+  .editor-find-bar { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--surface2); border-top: 1px solid var(--border); flex-shrink: 0; }
   .editor-find-bar input { flex: 1; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: var(--font); outline: none; }
+  .editor-find-bar input:focus { border-color: var(--accent); }
   .find-count { font-size: 13px; color: var(--text2); white-space: nowrap; }
 
   /* ===== TASK ROW ===== */
   .task-row .task-info { flex: 1; min-width: 0; }
   .task-row .task-deadline { font-size: 12px; color: var(--text3); }
-  .task-row .task-deadline.overdue { color: var(--danger); }
+  .task-row .task-deadline.overdue { color: var(--danger); font-weight: 600; }
   .task-row .task-path { font-size: 11px; color: var(--text3); }
+
+  /* Overdue badge */
+  .overdue-badge {
+    display: inline-flex; align-items: center;
+    background: #fee2e2; color: var(--danger);
+    font-size: 11px; font-weight: 700;
+    border-radius: 10px; padding: 2px 7px;
+    border: 1px solid #fca5a5;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .overdue-count-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--danger); color: #fff;
+    font-size: 11px; font-weight: 700;
+    border-radius: 10px; padding: 1px 7px;
+    margin-left: 4px;
+    white-space: nowrap;
+  }
+
+  /* ===== TODO CONTROLS ===== */
+  .todo-controls {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .todo-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .todo-sort { display: flex; align-items: center; gap: 8px; }
+  .todo-sort label { font-size: 13px; color: var(--text2); white-space: nowrap; }
+  .todo-sort select { padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: var(--font); background: var(--surface); color: var(--text); outline: none; }
+  .toggle-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s;
+    color: var(--text2);
+  }
+  .toggle-pill.on { background: var(--accent-light); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .toggle-pill .pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+  .toggle-pill.on .pill-dot { background: var(--accent); }
 
   /* ===== EMPTY STATE ===== */
   .empty-state { text-align: center; padding: 40px 20px; color: var(--text3); }
@@ -170,11 +318,6 @@
   .context-menu-item:hover { background: var(--surface2); }
   .context-menu-item.danger { color: var(--danger); }
   .context-menu-item svg { width: 16px; height: 16px; flex-shrink: 0; }
-
-  /* ===== PROJECT DEPTH INDENT ===== */
-  .depth-1 { padding-left: 14px; }
-  .depth-2 { padding-left: 28px; }
-  .depth-3 { padding-left: 42px; }
 
   /* ===== BADGES ===== */
   .badge { display: inline-flex; align-items: center; justify-content: center; background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 600; border-radius: 10px; padding: 1px 7px; }
@@ -253,85 +396,93 @@
 const DB_KEY = 'workspace_data_v1';
 const PREFS_KEY = 'workspace_prefs_v1';
 const QUEUE_KEY = 'workspace_queue_v1';
+const TODO_PREFS_KEY = 'workspace_todo_prefs_v1';
 
-let state = {
-  projects: [],
-  notes: [],
-  tasks: [],
-};
+let state = { projects: [], notes: [], tasks: [] };
 
-let prefs = {
-  scriptUrl: '',
-  apiToken: '',
-  clientId: '',
+let prefs = { scriptUrl: '', apiToken: '', clientId: '' };
+
+let todoPrefs = {
+  hideCompletedProjects: true,
+  overdueOnly: false,
+  hideNoDeadline: false,
+  sort: 'due_asc',
 };
 
 let syncQueue = [];
 let currentTab = 'home';
-let projectNavStack = []; // array of project ids
-let dragState = null;
+let projectNavStack = [];
 let isOnline = navigator.onLine;
 let syncTimer = null;
-let noteEditorState = { noteId: null, projectId: null, findMatches: [], findIdx: 0 };
+
+// Note editor state — extended for autosave
+let noteEditorState = {
+  noteId: null,
+  projectId: null,
+  findMatches: [],
+  findIdx: 0,
+  isDirty: false,
+  saveTimer: null,
+  lastSavedAt: null,
+};
 
 // ---- PERSISTENCE ----
 function saveState() {
-  try { localStorage.setItem(DB_KEY, JSON.stringify(state)); } catch(e){}
+  try { localStorage.setItem(DB_KEY, JSON.stringify(state)); } catch(e) { console.error('[State] saveState failed', e); }
 }
 function loadState() {
   try {
     const raw = localStorage.getItem(DB_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      state.projects = parsed.projects || [];
-      state.notes = parsed.notes || [];
-      state.tasks = parsed.tasks || [];
-    }
-  } catch(e) {}
+    if (raw) { const p = JSON.parse(raw); state.projects = p.projects||[]; state.notes = p.notes||[]; state.tasks = p.tasks||[]; }
+  } catch(e) { console.error('[State] loadState failed', e); }
 }
 function savePrefs() {
-  try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch(e){}
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch(e) {}
 }
 function loadPrefs() {
   try {
     const raw = localStorage.getItem(PREFS_KEY);
     if (raw) Object.assign(prefs, JSON.parse(raw));
-    if (!prefs.clientId) {
-      prefs.clientId = 'client_' + Math.random().toString(36).slice(2);
-      savePrefs();
-    }
+    if (!prefs.clientId) { prefs.clientId = 'client_' + Math.random().toString(36).slice(2); savePrefs(); }
   } catch(e) {}
 }
 function saveQueue() {
-  try { localStorage.setItem(QUEUE_KEY, JSON.stringify(syncQueue)); } catch(e){}
+  try { localStorage.setItem(QUEUE_KEY, JSON.stringify(syncQueue)); } catch(e) {}
 }
 function loadQueue() {
-  try {
-    const raw = localStorage.getItem(QUEUE_KEY);
-    if (raw) syncQueue = JSON.parse(raw);
-  } catch(e) {}
+  try { const raw = localStorage.getItem(QUEUE_KEY); if (raw) syncQueue = JSON.parse(raw); } catch(e) {}
+}
+function loadTodoPrefs() {
+  try { const raw = localStorage.getItem(TODO_PREFS_KEY); if (raw) Object.assign(todoPrefs, JSON.parse(raw)); } catch(e) {}
+}
+function saveTodoPrefs() {
+  try { localStorage.setItem(TODO_PREFS_KEY, JSON.stringify(todoPrefs)); } catch(e) {}
+}
+function setTodoPref(key, value) {
+  console.log('[ToDo] pref changed:', key, '->', value);
+  todoPrefs[key] = value;
+  saveTodoPrefs();
+  renderTodo();
+}
+function setTodoSort(value) {
+  console.log('[ToDo] sort changed:', value);
+  todoPrefs.sort = value;
+  saveTodoPrefs();
+  renderTodo();
 }
 
-// ---- ID GENERATOR ----
-function genId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-}
-
-// ---- TIMESTAMPS ----
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 function now() { return new Date().toISOString(); }
 
 // ============================================================
 // <!-- TREE + PATH UTILITIES -->
 // ============================================================
-
 function getProject(id) { return state.projects.find(p => p.id === id); }
 function getNote(id) { return state.notes.find(n => n.id === id); }
 function getTask(id) { return state.tasks.find(t => t.id === id); }
 
 function getChildren(parentId) {
-  return state.projects
-    .filter(p => p.parent_id === parentId && !p.is_archived)
-    .sort((a,b) => a.sort_order - b.sort_order);
+  return state.projects.filter(p => p.parent_id === parentId && !p.is_archived).sort((a,b) => a.sort_order - b.sort_order);
 }
 
 function getAllDescendantIds(projectId) {
@@ -340,10 +491,7 @@ function getAllDescendantIds(projectId) {
   while (queue.length) {
     const pid = queue.shift();
     const children = state.projects.filter(p => p.parent_id === pid);
-    for (const c of children) {
-      ids.push(c.id);
-      queue.push(c.id);
-    }
+    for (const c of children) { ids.push(c.id); queue.push(c.id); }
   }
   return ids;
 }
@@ -351,74 +499,41 @@ function getAllDescendantIds(projectId) {
 function getDepth(projectId) {
   let depth = 0;
   let p = getProject(projectId);
-  while (p && p.parent_id) {
-    depth++;
-    p = getProject(p.parent_id);
-    if (depth > 10) break; // safety
-  }
+  while (p && p.parent_id) { depth++; p = getProject(p.parent_id); if (depth > 10) break; }
   return depth;
 }
 
-function getMaxSubtreeDepth(projectId) {
-  const desc = getAllDescendantIds(projectId);
-  if (!desc.length) return getDepth(projectId);
-  return Math.max(...desc.map(id => getDepth(id)));
-}
-
-function isDescendant(ancestorId, projectId) {
-  const descs = getAllDescendantIds(ancestorId);
-  return descs.includes(projectId);
-}
+function isDescendant(ancestorId, projectId) { return getAllDescendantIds(ancestorId).includes(projectId); }
 
 function getAncestorChain(projectId) {
   const chain = [];
   let p = getProject(projectId);
-  while (p) {
-    chain.unshift(p);
-    if (!p.parent_id) break;
-    p = getProject(p.parent_id);
-  }
+  while (p) { chain.unshift(p); if (!p.parent_id) break; p = getProject(p.parent_id); }
   return chain;
 }
 
-function getProjectPath(projectId) {
-  return getAncestorChain(projectId).map(p => p.name).join(' › ');
-}
+function getProjectPath(projectId) { return getAncestorChain(projectId).map(p => p.name).join(' › '); }
 
 function getRootProjects() {
-  return state.projects
-    .filter(p => !p.parent_id && !p.is_archived)
-    .sort((a,b) => a.sort_order - b.sort_order);
+  return state.projects.filter(p => !p.parent_id && !p.is_archived).sort((a,b) => a.sort_order - b.sort_order);
 }
 
 function getProjectNotes(projectId, includeSubprojects = false) {
-  if (!includeSubprojects) {
-    return state.notes
-      .filter(n => n.project_id === projectId && !n.is_archived)
-      .sort((a,b) => a.sort_order - b.sort_order);
-  }
+  if (!includeSubprojects) return state.notes.filter(n => n.project_id === projectId && !n.is_archived).sort((a,b) => a.sort_order - b.sort_order);
   const ids = [projectId, ...getAllDescendantIds(projectId)];
-  return state.notes
-    .filter(n => ids.includes(n.project_id) && !n.is_archived)
-    .sort((a,b) => {
-      if (a.project_id !== b.project_id) return ids.indexOf(a.project_id) - ids.indexOf(b.project_id);
-      return a.sort_order - b.sort_order;
-    });
+  return state.notes.filter(n => ids.includes(n.project_id) && !n.is_archived).sort((a,b) => {
+    if (a.project_id !== b.project_id) return ids.indexOf(a.project_id) - ids.indexOf(b.project_id);
+    return a.sort_order - b.sort_order;
+  });
 }
 
 function getProjectTasks(projectId, includeSubprojects = false) {
-  if (!includeSubprojects) {
-    return state.tasks
-      .filter(t => t.project_id === projectId && !t.is_archived)
-      .sort((a,b) => a.sort_order - b.sort_order);
-  }
+  if (!includeSubprojects) return state.tasks.filter(t => t.project_id === projectId && !t.is_archived).sort((a,b) => a.sort_order - b.sort_order);
   const ids = [projectId, ...getAllDescendantIds(projectId)];
-  return state.tasks
-    .filter(t => ids.includes(t.project_id) && !t.is_archived)
-    .sort((a,b) => {
-      if (a.project_id !== b.project_id) return ids.indexOf(a.project_id) - ids.indexOf(b.project_id);
-      return a.sort_order - b.sort_order;
-    });
+  return state.tasks.filter(t => ids.includes(t.project_id) && !t.is_archived).sort((a,b) => {
+    if (a.project_id !== b.project_id) return ids.indexOf(a.project_id) - ids.indexOf(b.project_id);
+    return a.sort_order - b.sort_order;
+  });
 }
 
 function nextSortOrder(items) {
@@ -426,9 +541,19 @@ function nextSortOrder(items) {
   return Math.max(...items.map(i => i.sort_order || 0)) + 1;
 }
 
+function isTaskOverdue(t) {
+  return !!(t.deadline && !t.is_done && new Date(t.deadline) < new Date());
+}
+
 // ============================================================
 // <!-- SEARCH INDEX -->
 // ============================================================
+
+function htmlToText(html) {
+  const d = document.createElement('div');
+  d.innerHTML = html || '';
+  return (d.textContent || d.innerText || '').replace(/\s+/g,' ').trim();
+}
 
 function buildSearchIndex() {
   const idx = [];
@@ -438,7 +563,8 @@ function buildSearchIndex() {
   }
   for (const n of state.notes) {
     if (n.is_archived) continue;
-    idx.push({ type: 'note', id: n.id, text: (n.title + ' ' + (n.content||'')).toLowerCase(), item: n });
+    // Strip HTML for search — use htmlToText()
+    idx.push({ type: 'note', id: n.id, text: (n.title + ' ' + htmlToText(n.content||'')).toLowerCase(), item: n });
   }
   for (const t of state.tasks) {
     if (t.is_archived) continue;
@@ -452,11 +578,7 @@ function searchQuery(query) {
   const q = query.toLowerCase();
   const idx = buildSearchIndex();
   const results = { projects: [], notes: [], tasks: [] };
-  for (const entry of idx) {
-    if (entry.text.includes(q)) {
-      results[entry.type + 's'].push(entry);
-    }
-  }
+  for (const entry of idx) { if (entry.text.includes(q)) results[entry.type + 's'].push(entry); }
   return results;
 }
 
@@ -475,8 +597,6 @@ function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 // ============================================================
 // <!-- RENDERING -->
 // ============================================================
-
-// SVG icons
 const SVG = {
   check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`,
   plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
@@ -492,10 +612,11 @@ const SVG = {
   task: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 22 4"/></svg>`,
   unarchive: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><polyline points="10 12 12 10 14 12"/><line x1="12" y1="10" x2="12" y2="16"/></svg>`,
   search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
 };
 
-function checkBtn(isDone, onclick, size='') {
-  return `<div class="check-wrap"><button class="check-btn ${isDone?'done':''}" onclick="${onclick}">${SVG.check}</button></div>`;
+function checkBtn(isDone, onclickStr) {
+  return `<div class="check-wrap"><button class="check-btn ${isDone?'done':''}" onclick="${onclickStr}">${SVG.check}</button></div>`;
 }
 
 // ---- HOME SCREEN ----
@@ -556,9 +677,17 @@ function renderProject(projectId) {
   if (!p) { switchToHome(); return; }
 
   const chain = getAncestorChain(projectId);
-  const breadcrumb = chain.slice(0, -1).map(a =>
-    `<a onclick="openProject('${a.id}')">${esc(a.name)}</a><span class="sep"> › </span>`
-  ).join('');
+
+  // Enhanced breadcrumb — larger, scrollable, emphasized current
+  let breadcrumbHtml = '';
+  chain.forEach((ancestor, i) => {
+    const isLast = i === chain.length - 1;
+    if (isLast) {
+      breadcrumbHtml += `<span class="crumb-current">${esc(ancestor.name)}</span>`;
+    } else {
+      breadcrumbHtml += `<a onclick="openProject('${ancestor.id}')">${esc(ancestor.name)}</a><span class="sep">›</span>`;
+    }
+  });
 
   const scopeNotes = window._notesScope || 'this';
   const scopeTasks = window._tasksScope || 'this';
@@ -578,7 +707,7 @@ function renderProject(projectId) {
     <div class="screen-header">
       <button class="btn-icon" onclick="navBack()">${SVG.back}</button>
       <div style="flex:1;min-width:0">
-        <div class="breadcrumb" style="padding:0;margin-bottom:2px">${breadcrumb}<span>${esc(p.name)}</span></div>
+        <div class="breadcrumb">${breadcrumbHtml}</div>
       </div>
       <button class="btn-icon" onclick="showProjectMenu(event,'${p.id}','project')">${SVG.dots}</button>
     </div>
@@ -604,10 +733,7 @@ function renderProject(projectId) {
         </div>
         <div id="notes-list">
           ${notes.length === 0 ? `<div class="empty-state"><p>No notes</p></div>` : ''}
-          ${inclSubNotes
-            ? renderNotesGrouped(projectId, notes)
-            : notes.map(n => renderNoteRow(n, projectId)).join('')
-          }
+          ${inclSubNotes ? renderNotesGrouped(projectId, notes) : notes.map(n => renderNoteRow(n, projectId)).join('')}
         </div>
       </div>
     </div>
@@ -674,24 +800,19 @@ function renderProject(projectId) {
 function renderNotesGrouped(projectId, notes) {
   const ids = [projectId, ...getAllDescendantIds(projectId)];
   const groups = {};
-  for (const n of notes) {
-    if (!groups[n.project_id]) groups[n.project_id] = [];
-    groups[n.project_id].push(n);
-  }
+  for (const n of notes) { if (!groups[n.project_id]) groups[n.project_id] = []; groups[n.project_id].push(n); }
   let html = '';
   for (const pid of ids) {
     if (!groups[pid]) continue;
     const pName = pid === projectId ? 'This project' : getProjectPath(pid);
     html += `<div class="section-label">${esc(pName)}</div>`;
-    for (const n of groups[pid]) {
-      html += renderNoteRow(n, pid);
-    }
+    for (const n of groups[pid]) html += renderNoteRow(n, pid);
   }
   return html;
 }
 
 function renderNoteRow(n, projectId) {
-  const preview = (n.content || '').slice(0, 80);
+  const preview = htmlToText(n.content || '').slice(0, 80);
   return `
     <div class="list-item" data-id="${n.id}" draggable="true">
       <div class="drag-handle">${SVG.drag}</div>
@@ -707,7 +828,7 @@ function renderNoteRow(n, projectId) {
 function renderTaskRow(t, ownerProjectId) {
   const isSubproject = t.project_id !== ownerProjectId;
   const deadlineStr = t.deadline ? formatDeadline(t.deadline) : '';
-  const isOverdue = t.deadline && !t.is_done && new Date(t.deadline) < new Date();
+  const overdue = isTaskOverdue(t);
   return `
     <div class="list-item task-row" data-id="${t.id}" draggable="${!isSubproject}">
       ${!isSubproject ? `<div class="drag-handle">${SVG.drag}</div>` : '<div style="width:24px"></div>'}
@@ -715,9 +836,10 @@ function renderTaskRow(t, ownerProjectId) {
       <div class="task-info" style="cursor:pointer" onclick="showEditTaskModal('${t.id}')">
         <div class="item-name ${t.is_done?'done':''}">${esc(t.name)}</div>
         ${t.description ? `<div class="item-desc">${esc(t.description)}</div>` : ''}
-        ${deadlineStr ? `<div class="task-deadline ${isOverdue?'overdue':''}">${deadlineStr}</div>` : ''}
+        ${deadlineStr ? `<div class="task-deadline ${overdue?'overdue':''}">${overdue?'⚠ ':''}${deadlineStr}</div>` : ''}
         ${isSubproject ? `<div class="task-path">${esc(getProjectPath(t.project_id))}</div>` : ''}
       </div>
+      ${overdue ? `<span class="overdue-badge">Overdue</span>` : ''}
       <button class="btn-icon" onclick="showTaskMenu(event,'${t.id}')">${SVG.dots}</button>
     </div>
   `;
@@ -729,19 +851,30 @@ function formatDeadline(d) {
   return date.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
 }
 
-// ---- TO-DO TAB ----
+// ---- TO-DO TAB (enhanced) ----
 function renderTodo() {
   const screen = document.getElementById('screen-todo');
 
-  // Eligible tasks: not done, not archived, project not completed, not archived
-  const eligible = state.tasks.filter(t => {
+  // Eligibility: not done, not archived, project not completed/archived
+  let eligible = state.tasks.filter(t => {
     if (t.is_done || t.is_archived) return false;
     const p = getProject(t.project_id);
     if (!p || p.is_completed || p.is_archived) return false;
     return true;
   });
 
-  // Group by root project
+  // Apply filters
+  if (todoPrefs.overdueOnly) {
+    eligible = eligible.filter(t => isTaskOverdue(t));
+  }
+  if (todoPrefs.hideNoDeadline) {
+    eligible = eligible.filter(t => !!t.deadline);
+  }
+
+  // Sort
+  eligible = sortTodoTasks(eligible);
+
+  // Group by root project (for project_order mode, grouping is primary)
   const rootMap = {};
   for (const t of eligible) {
     const chain = getAncestorChain(t.project_id);
@@ -754,50 +887,122 @@ function renderTodo() {
   const rootIds = Object.keys(rootMap);
   const rootProjects = getRootProjects().filter(r => rootIds.includes(r.id));
 
-  let html = `
-    <div class="screen-header">
-      <h1>To-Do</h1>
+  // Controls HTML
+  const controlsHtml = `
+    <div class="todo-controls">
+      <div class="todo-filters">
+        <span
+          class="toggle-pill ${todoPrefs.overdueOnly?'on':''}"
+          onclick="setTodoPref('overdueOnly', ${!todoPrefs.overdueOnly})"
+          title="Show only overdue tasks">
+          <span class="pill-dot"></span>Overdue only
+        </span>
+        <span
+          class="toggle-pill ${todoPrefs.hideNoDeadline?'on':''}"
+          onclick="setTodoPref('hideNoDeadline', ${!todoPrefs.hideNoDeadline})"
+          title="Hide tasks without a deadline">
+          <span class="pill-dot"></span>Hide no-deadline
+        </span>
+      </div>
+      <div class="todo-sort">
+        <label for="todo-sort-sel">Sort:</label>
+        <select id="todo-sort-sel" onchange="setTodoSort(this.value)">
+          <option value="due_asc"   ${todoPrefs.sort==='due_asc'   ?'selected':''}>Due date (soonest)</option>
+          <option value="due_desc"  ${todoPrefs.sort==='due_desc'  ?'selected':''}>Due date (latest)</option>
+          <option value="project_order" ${todoPrefs.sort==='project_order'?'selected':''}>Project order</option>
+          <option value="updated_desc"  ${todoPrefs.sort==='updated_desc' ?'selected':''}>Recently updated</option>
+        </select>
+      </div>
     </div>
   `;
 
+  let listHtml = '';
   if (eligible.length === 0) {
-    html += `<div class="empty-state" style="padding-top:60px">
-      ${SVG.check}
-      <p>All caught up! No pending tasks.</p>
+    listHtml = `<div class="empty-state" style="padding-top:40px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;opacity:0.25;margin-bottom:12px"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <p>No tasks match the current filters.</p>
     </div>`;
   } else {
     for (const root of rootProjects) {
       const tasks = rootMap[root.id] || [];
-      const directTasks = tasks.filter(t => t.project_id === root.id);
-      const subTasks = tasks.filter(t => t.project_id !== root.id);
+      // Count overdue in this root subtree (unfiltered eligible)
+      const allEligibleInRoot = state.tasks.filter(t => {
+        if (t.is_done || t.is_archived) return false;
+        const chain = getAncestorChain(t.project_id);
+        if (chain[0]?.id !== root.id) return false;
+        const p = getProject(t.project_id);
+        if (!p || p.is_completed || p.is_archived) return false;
+        return true;
+      });
+      const overdueCount = allEligibleInRoot.filter(t => isTaskOverdue(t)).length;
+      const overdueBadge = overdueCount > 0 ? `<span class="overdue-count-badge">⚠ ${overdueCount}</span>` : '';
 
-      html += `<div class="card" style="overflow:hidden;margin-bottom:8px">
-        <div style="padding:10px 14px;background:var(--accent-light);border-bottom:1px solid var(--border);cursor:pointer;font-weight:600;font-size:14px;color:var(--accent)" onclick="openProject('${root.id}')">
-          ${SVG.folder.replace('<svg','<svg style="width:14px;height:14px;margin-right:6px;vertical-align:-2px"')} ${esc(root.name)}
+      listHtml += `<div class="card" style="overflow:hidden;margin-bottom:8px">
+        <div style="padding:10px 14px;background:var(--accent-light);border-bottom:1px solid var(--border);display:flex;align-items:center;cursor:pointer" onclick="openProject('${root.id}')">
+          <span style="flex:1;font-weight:600;font-size:14px;color:var(--accent)">${esc(root.name)}</span>
+          ${overdueBadge}
         </div>
-        ${directTasks.map(t => renderTodoTaskRow(t)).join('')}
-        ${subTasks.map(t => renderTodoTaskRow(t)).join('')}
+        ${tasks.map(t => renderTodoTaskRow(t)).join('')}
       </div>`;
     }
   }
-  html += '<div style="height:80px"></div>';
-  screen.innerHTML = html;
+
+  screen.innerHTML = `
+    <div class="screen-header"><h1>To-Do</h1></div>
+    ${controlsHtml}
+    ${listHtml}
+    <div style="height:80px"></div>
+  `;
+}
+
+function sortTodoTasks(tasks) {
+  const sort = todoPrefs.sort;
+  return [...tasks].sort((a, b) => {
+    if (sort === 'due_asc') {
+      if (!a.deadline && !b.deadline) return 0;
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline) - new Date(b.deadline);
+    }
+    if (sort === 'due_desc') {
+      if (!a.deadline && !b.deadline) return 0;
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(b.deadline) - new Date(a.deadline);
+    }
+    if (sort === 'updated_desc') {
+      return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+    }
+    if (sort === 'project_order') {
+      // Sort by root project sort_order, then by ancestor chain, then task sort_order
+      const chainA = getAncestorChain(a.project_id);
+      const chainB = getAncestorChain(b.project_id);
+      const rootA = chainA[0];
+      const rootB = chainB[0];
+      if (rootA && rootB && rootA.id !== rootB.id) return (rootA.sort_order||0) - (rootB.sort_order||0);
+      // Same root: sort by task sort_order
+      return (a.sort_order||0) - (b.sort_order||0);
+    }
+    return 0;
+  });
 }
 
 function renderTodoTaskRow(t) {
-  const isRoot = getAncestorChain(t.project_id).length === 1;
+  const chain = getAncestorChain(t.project_id);
+  const isRoot = chain.length === 1;
   const pathLabel = !isRoot ? `<div class="task-path">${esc(getProjectPath(t.project_id))}</div>` : '';
   const deadlineStr = t.deadline ? formatDeadline(t.deadline) : '';
-  const isOverdue = t.deadline && new Date(t.deadline) < new Date();
+  const overdue = isTaskOverdue(t);
   return `
     <div class="list-item task-row" data-id="${t.id}">
       ${checkBtn(t.is_done, `toggleTaskDoneTodo('${t.id}')`)}
       <div class="task-info" style="cursor:pointer" onclick="showEditTaskModal('${t.id}')">
         <div class="item-name">${esc(t.name)}</div>
         ${t.description ? `<div class="item-desc">${esc(t.description)}</div>` : ''}
-        ${deadlineStr ? `<div class="task-deadline ${isOverdue?'overdue':''}">${deadlineStr}</div>` : ''}
+        ${deadlineStr ? `<div class="task-deadline ${overdue?'overdue':''}">${overdue?'⚠ ':''}${deadlineStr}</div>` : ''}
         ${pathLabel}
       </div>
+      ${overdue ? `<span class="overdue-badge">Overdue</span>` : ''}
     </div>
   `;
 }
@@ -830,13 +1035,14 @@ function renderSearch(query='', results=null) {
         resultsHtml += `<div class="result-group-title">Notes (${notes.length})</div>`;
         for (const r of notes) {
           const n = r.item;
+          const plainContent = htmlToText(n.content || '');
           resultsHtml += `
             <div class="list-item" style="cursor:pointer;background:var(--surface)" onclick="openNoteFromSearch('${n.id}','${encodeURIComponent(query)}')">
               <div style="color:var(--accent2)">${SVG.note.replace('<svg','<svg style="width:18px;height:18px"')}</div>
               <div style="flex:1;min-width:0">
                 <div class="item-name">${esc(n.title||'Untitled')}</div>
                 <div class="item-path">${esc(getProjectPath(n.project_id))}</div>
-                <div class="result-snippet">${getSnippet((n.title+' '+(n.content||'')), query)}</div>
+                <div class="result-snippet">${getSnippet((n.title+' '+plainContent), query)}</div>
               </div>
             </div>`;
         }
@@ -860,16 +1066,13 @@ function renderSearch(query='', results=null) {
   }
 
   screen.innerHTML = `
-    <div class="screen-header">
-      <h1>Search</h1>
-    </div>
+    <div class="screen-header"><h1>Search</h1></div>
     <div class="search-bar">
       <input id="search-input" class="search-input" placeholder="Search projects, notes, tasks…" value="${esc(query)}" onkeydown="handleSearchKey(event)">
       <button class="btn btn-primary" onclick="doSearch()">Go</button>
     </div>
     <div id="search-results">${resultsHtml}</div>
   `;
-  if (query) setTimeout(() => document.getElementById('search-input')?.focus(), 50);
 }
 
 function renderArchive() {
@@ -880,7 +1083,6 @@ function renderArchive() {
 
   screen.innerHTML = `
     <div class="screen-header"><h1>Archive</h1></div>
-
     <div class="card accordion" style="overflow:hidden">
       <div class="accordion-header open" onclick="toggleAccordion(this)">
         ${SVG.chevron}<span class="acc-title">Projects (${archivedProjects.length})</span>
@@ -890,7 +1092,6 @@ function renderArchive() {
         ${archivedProjects.map(p => renderArchivedProjectRow(p)).join('')}
       </div>
     </div>
-
     <div class="card accordion" style="overflow:hidden">
       <div class="accordion-header open" onclick="toggleAccordion(this)">
         ${SVG.chevron}<span class="acc-title">Notes (${archivedNotes.length})</span>
@@ -900,7 +1101,6 @@ function renderArchive() {
         ${archivedNotes.map(n => renderArchivedNoteRow(n)).join('')}
       </div>
     </div>
-
     <div class="card accordion" style="overflow:hidden">
       <div class="accordion-header open" onclick="toggleAccordion(this)">
         ${SVG.chevron}<span class="acc-title">Tasks (${archivedTasks.length})</span>
@@ -958,18 +1158,17 @@ function renderSettings() {
   const qLen = syncQueue.length;
   screen.innerHTML = `
     <div class="screen-header"><h1>Settings</h1></div>
-
     <div class="settings-section">
       <h3>Google Sheets Sync</h3>
       <div class="settings-row">
-        <label>Apps Script URL</label>
-        <button class="btn btn-secondary" style="font-size:13px" onclick="promptSetting('scriptUrl','Apps Script URL',prefs.scriptUrl)">
+        <label>Apps Script URL <span style="font-size:11px;color:var(--text3)">(use /exec URL)</span></label>
+        <button class="btn btn-secondary" style="font-size:13px" onclick="promptSetting('scriptUrl','Apps Script /exec URL',prefs.scriptUrl)">
           ${prefs.scriptUrl ? '✓ Set' : 'Set URL'}
         </button>
       </div>
       <div class="settings-row">
         <label>API Token</label>
-        <button class="btn btn-secondary" style="font-size:13px" onclick="promptSetting('apiToken','API Token (shared secret)',prefs.apiToken,'password')">
+        <button class="btn btn-secondary" style="font-size:13px" onclick="promptSetting('apiToken','API Token',prefs.apiToken,'password')">
           ${prefs.apiToken ? '✓ Set' : 'Set Token'}
         </button>
       </div>
@@ -978,7 +1177,6 @@ function renderSettings() {
         <span class="settings-val">${prefs.clientId}</span>
       </div>
     </div>
-
     <div class="settings-section">
       <h3>Sync Controls</h3>
       <div class="settings-row">
@@ -997,25 +1195,16 @@ function renderSettings() {
         <button class="btn btn-danger" onclick="clearToken()">Clear Token</button>
       </div>
     </div>
-
     <div class="setup-guide">
       <h3>📋 Setup Guide</h3>
       <ol>
         <li>Open <a href="https://sheets.google.com" target="_blank">Google Sheets</a> and create a new spreadsheet.</li>
-        <li>Create 4 sheets named exactly: <code>Projects</code>, <code>Notes</code>, <code>Tasks</code>, <code>OpLog</code>.</li>
-        <li>In each sheet add the following header rows:
-          <ul style="margin-top:4px;padding-left:16px">
-            <li><b>Projects:</b> <code>id | parent_id | name | description | is_completed | completed_at | is_archived | archived_at | sort_order | created_at | updated_at</code></li>
-            <li><b>Notes:</b> <code>id | project_id | title | content | is_archived | sort_order | created_at | updated_at</code></li>
-            <li><b>Tasks:</b> <code>id | project_id | name | description | deadline | is_done | completed_at | is_archived | sort_order | created_at | updated_at</code></li>
-            <li><b>OpLog:</b> <code>opId | type | payload_json | timestamp | client_id</code></li>
-          </ul>
-        </li>
-        <li>Open <b>Extensions → Apps Script</b>. Replace the default code with the WorkSpace Apps Script (see project README).</li>
-        <li>In the script, set <code>API_TOKEN</code> to a secret string (e.g., a random UUID).</li>
-        <li>Deploy: <b>Deploy → New deployment → Web app</b>. Set "Execute as: Me" and "Who has access: Anyone". Copy the URL.</li>
-        <li>Paste the URL and your token into Settings above.</li>
-        <li>Tap <b>Test Connection</b> to verify, then <b>Force Resync</b> to pull any existing data.</li>
+        <li>Create 4 sheets: <code>Projects</code>, <code>Notes</code>, <code>Tasks</code>, <code>OpLog</code>.</li>
+        <li>Add headers per sheet per the README.</li>
+        <li>Open <b>Extensions → Apps Script</b>, paste the WorkSpace Apps Script.</li>
+        <li>Set <code>API_TOKEN</code> to a secret string.</li>
+        <li>Deploy: <b>Deploy → New deployment → Web app</b>. "Execute as: Me", "Access: Anyone". Copy the <b>/exec</b> URL (not /dev).</li>
+        <li>Paste the <b>/exec</b> URL and token here. Tap <b>Test Connection</b>.</li>
       </ol>
     </div>
     <div style="height:80px"></div>
@@ -1055,27 +1244,18 @@ function switchTab(tab) {
   }
 }
 
-function switchToHome() {
-  switchTab('home');
-}
+function switchToHome() { switchTab('home'); }
 
 function openProject(projectId) {
   const p = getProject(projectId);
   if (!p) return;
   document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
   document.getElementById('screen-project').style.display = '';
-
   if (currentTab === 'home') {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'home'));
   }
-
-  // update nav stack
-  if (!projectNavStack.includes(projectId)) {
-    projectNavStack.push(projectId);
-  } else {
-    const idx = projectNavStack.indexOf(projectId);
-    projectNavStack = projectNavStack.slice(0, idx + 1);
-  }
+  if (!projectNavStack.includes(projectId)) projectNavStack.push(projectId);
+  else { const idx = projectNavStack.indexOf(projectId); projectNavStack = projectNavStack.slice(0, idx + 1); }
   window._notesScope = 'this';
   window._tasksScope = 'this';
   renderProject(projectId);
@@ -1083,9 +1263,8 @@ function openProject(projectId) {
 
 function navBack() {
   projectNavStack.pop();
-  if (projectNavStack.length === 0) {
-    switchTab('home');
-  } else {
+  if (projectNavStack.length === 0) switchTab('home');
+  else {
     const prevId = projectNavStack[projectNavStack.length - 1];
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
     document.getElementById('screen-project').style.display = '';
@@ -1110,7 +1289,6 @@ function showNewProjectModal(parentId) {
   console.log('[Modal] showNewProjectModal called, parentId:', parentId);
   const depth = parentId ? getDepth(parentId) + 1 : 0;
   if (depth >= 4) { showToast('Maximum depth reached (4 levels)'); return; }
-
   showModal({
     title: parentId ? 'New Subproject' : 'New Project',
     fields: [
@@ -1121,9 +1299,7 @@ function showNewProjectModal(parentId) {
       try {
         console.log('[Project] Create started with data:', data);
         const pid = parentId || null;
-        const siblings = pid
-          ? state.projects.filter(p => p.parent_id === pid)
-          : state.projects.filter(p => !p.parent_id);
+        const siblings = pid ? state.projects.filter(p => p.parent_id === pid) : state.projects.filter(p => !p.parent_id);
         const project = {
           id: genId(),
           parent_id: pid,
@@ -1176,15 +1352,10 @@ function toggleProjectComplete(projectId) {
   const p = getProject(projectId);
   if (!p) return;
   const newVal = !p.is_completed;
-  // cascade to descendants
   const ids = [projectId, ...getAllDescendantIds(projectId)];
   for (const id of ids) {
     const proj = getProject(id);
-    if (proj) {
-      proj.is_completed = newVal;
-      proj.completed_at = newVal ? now() : null;
-      proj.updated_at = now();
-    }
+    if (proj) { proj.is_completed = newVal; proj.completed_at = newVal ? now() : null; proj.updated_at = now(); }
   }
   saveState();
   enqueueOp({ type: 'TOGGLE_COMPLETE_PROJECT', payload: { id: projectId, is_completed: newVal, cascade_ids: ids, completed_at: p.completed_at } });
@@ -1196,19 +1367,10 @@ function archiveProject(projectId) {
     const ids = [projectId, ...getAllDescendantIds(projectId)];
     for (const id of ids) {
       const proj = getProject(id);
-      if (proj) {
-        proj.is_archived = true;
-        proj.archived_at = now();
-        proj.updated_at = now();
-      }
+      if (proj) { proj.is_archived = true; proj.archived_at = now(); proj.updated_at = now(); }
     }
-    // Archive notes and tasks within subtree
-    for (const n of state.notes) {
-      if (ids.includes(n.project_id)) { n.is_archived = true; n.updated_at = now(); }
-    }
-    for (const t of state.tasks) {
-      if (ids.includes(t.project_id)) { t.is_archived = true; t.updated_at = now(); }
-    }
+    for (const n of state.notes) { if (ids.includes(n.project_id)) { n.is_archived = true; n.updated_at = now(); } }
+    for (const t of state.tasks) { if (ids.includes(t.project_id)) { t.is_archived = true; t.updated_at = now(); } }
     saveState();
     enqueueOp({ type: 'ARCHIVE_PROJECT', payload: { id: projectId, cascade_ids: ids } });
     if (projectNavStack.includes(projectId)) navBack();
@@ -1219,9 +1381,7 @@ function archiveProject(projectId) {
 function unarchiveProject(projectId) {
   const p = getProject(projectId);
   if (!p) return;
-  p.is_archived = false;
-  p.archived_at = null;
-  p.updated_at = now();
+  p.is_archived = false; p.archived_at = null; p.updated_at = now();
   saveState();
   enqueueOp({ type: 'UNARCHIVE_PROJECT', payload: { id: projectId } });
   renderArchive();
@@ -1236,13 +1396,10 @@ function deleteProject(projectId) {
     saveState();
     enqueueOp({ type: 'DELETE_PROJECT', payload: { id: projectId, cascade_ids: ids } });
     if (projectNavStack.some(id => ids.includes(id))) {
-      // Pop back until safe
       projectNavStack = projectNavStack.filter(id => !ids.includes(id));
       if (projectNavStack.length) renderProject(projectNavStack[projectNavStack.length - 1]);
       else switchTab('home');
-    } else {
-      refreshCurrentView();
-    }
+    } else { refreshCurrentView(); }
   });
 }
 
@@ -1250,9 +1407,7 @@ function deleteProject(projectId) {
 function showNewNoteModal(projectId) {
   showModal({
     title: 'New Note',
-    fields: [
-      { id: 'title', label: 'Title', type: 'text', required: true },
-    ],
+    fields: [{ id: 'title', label: 'Title', type: 'text', required: true }],
     onSave: (data) => {
       const siblings = state.notes.filter(n => n.project_id === projectId);
       const note = {
@@ -1274,61 +1429,168 @@ function showNewNoteModal(projectId) {
   });
 }
 
+// ---- RICH NOTE EDITOR with autosave ----
 function openNoteEditor(noteId, findQuery='') {
   const n = getNote(noteId);
   if (!n) return;
+  console.log('[NoteEditor] Opening note:', noteId);
+
+  // Reset editor state
   noteEditorState.noteId = noteId;
   noteEditorState.projectId = n.project_id;
   noteEditorState.findMatches = [];
   noteEditorState.findIdx = 0;
+  noteEditorState.isDirty = false;
+  noteEditorState.lastSavedAt = n.updated_at;
+  if (noteEditorState.saveTimer) { clearTimeout(noteEditorState.saveTimer); noteEditorState.saveTimer = null; }
 
   const editor = document.getElementById('note-editor');
   editor.style.display = 'flex';
   editor.innerHTML = `
     <div class="editor-header">
-      <button class="btn-icon" onclick="closeNoteEditor()">${SVG.back}</button>
-      <input class="editor-title-input" id="note-title-input" placeholder="Title" value="${esc(n.title||'')}">
-      <button class="btn btn-primary" onclick="saveNote('${noteId}')">Save</button>
-      <button class="btn-icon" onclick="toggleFindBar()">${SVG.search}</button>
+      <button class="btn-icon" id="editor-back-btn">${SVG.back}</button>
+      <span style="font-size:14px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(getProjectPath(n.project_id))}</span>
+      <button class="btn-icon" id="editor-find-toggle-btn" title="Find in note">${SVG.search}</button>
+    </div>
+    <div class="editor-title-block">
+      <input class="editor-title-large" id="note-title-input" placeholder="Note title…" value="${esc(n.title||'')}">
+    </div>
+    <div class="editor-toolbar" id="note-toolbar">
+      <button class="tool-btn" id="tb-bold" title="Bold"><b>B</b></button>
+      <button class="tool-btn" id="tb-underline" title="Underline"><u>U</u></button>
+      <div class="tool-sep"></div>
+      <button class="tool-btn" id="tb-ul" title="Bullet list">• List</button>
+      <button class="tool-btn" id="tb-ol" title="Numbered list">1. List</button>
+      <button class="tool-btn" id="tb-indent" title="Indent">→</button>
+      <button class="tool-btn" id="tb-outdent" title="Outdent">←</button>
+      <div class="tool-sep"></div>
+      <button class="tool-btn" id="tb-undo" title="Undo">↶</button>
+      <button class="tool-btn" id="tb-redo" title="Redo">↷</button>
+      <span class="save-status saved" id="note-save-status">Saved</span>
     </div>
     <div id="note-find-bar" class="editor-find-bar" style="display:none">
-      <input id="note-find-input" placeholder="Find…" oninput="updateNoteFind()" onkeydown="noteFindKey(event)">
+      <input id="note-find-input" placeholder="Find…">
       <span class="find-count" id="note-find-count"></span>
-      <button class="btn-icon" onclick="noteFind(-1)">▲</button>
-      <button class="btn-icon" onclick="noteFind(1)">▼</button>
-      <button class="btn-icon" onclick="toggleFindBar()">✕</button>
+      <button class="btn-icon" id="find-prev-btn">▲</button>
+      <button class="btn-icon" id="find-next-btn">▼</button>
+      <button class="btn-icon" id="find-close-btn">✕</button>
     </div>
     <div class="editor-body" id="note-body">
-      <textarea class="editor-content" id="note-content" placeholder="Write your note here…">${esc(n.content||'')}</textarea>
+      <div class="editor-content rich" id="note-content" contenteditable="true" spellcheck="true"></div>
     </div>
-    <div style="padding:8px 14px;font-size:12px;color:var(--text3);border-top:1px solid var(--border)">
+    <div style="padding:6px 14px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);flex-shrink:0">
       Last updated: ${n.updated_at ? new Date(n.updated_at).toLocaleString() : 'Never'}
       ${n.is_archived ? ' · <span class="archived-badge">Archived</span>' : ''}
     </div>
   `;
+
+  // Set rich content AFTER DOM is built
+  const contentEl = document.getElementById('note-content');
+  contentEl.innerHTML = n.content || '';
+
+  // Wire up event listeners (explicit, not inline onclick)
+  document.getElementById('editor-back-btn').addEventListener('click', () => closeNoteEditor());
+  document.getElementById('editor-find-toggle-btn').addEventListener('click', () => toggleFindBar());
+
+  document.getElementById('tb-bold').addEventListener('click', () => formatCmd('bold'));
+  document.getElementById('tb-underline').addEventListener('click', () => formatCmd('underline'));
+  document.getElementById('tb-ul').addEventListener('click', () => formatCmd('insertUnorderedList'));
+  document.getElementById('tb-ol').addEventListener('click', () => formatCmd('insertOrderedList'));
+  document.getElementById('tb-indent').addEventListener('click', () => formatCmd('indent'));
+  document.getElementById('tb-outdent').addEventListener('click', () => formatCmd('outdent'));
+  document.getElementById('tb-undo').addEventListener('click', () => formatCmd('undo'));
+  document.getElementById('tb-redo').addEventListener('click', () => formatCmd('redo'));
+
+  document.getElementById('find-prev-btn').addEventListener('click', () => noteFind(-1));
+  document.getElementById('find-next-btn').addEventListener('click', () => noteFind(1));
+  document.getElementById('find-close-btn').addEventListener('click', () => toggleFindBar());
+
+  // Autosave wiring — title
+  const titleEl = document.getElementById('note-title-input');
+  titleEl.addEventListener('input', () => scheduleNoteAutosave());
+  titleEl.addEventListener('blur', () => { if (noteEditorState.isDirty) flushNoteAutosave(); });
+
+  // Autosave wiring — content
+  contentEl.addEventListener('input', () => scheduleNoteAutosave());
+  contentEl.addEventListener('blur', () => { if (noteEditorState.isDirty) flushNoteAutosave(); });
+
+  // Find input
+  const findInput = document.getElementById('note-find-input');
+  findInput.addEventListener('input', () => updateNoteFind());
+  findInput.addEventListener('keydown', (e) => noteFindKey(e));
+
   if (findQuery) {
-    setTimeout(() => {
-      toggleFindBar(findQuery);
-    }, 100);
+    setTimeout(() => toggleFindBar(findQuery), 100);
+  }
+}
+
+// ---- Autosave helpers ----
+function scheduleNoteAutosave() {
+  noteEditorState.isDirty = true;
+  setNoteSaveStatus('saving');
+  if (noteEditorState.saveTimer) clearTimeout(noteEditorState.saveTimer);
+  noteEditorState.saveTimer = setTimeout(() => flushNoteAutosave(), 1000);
+}
+
+function flushNoteAutosave() {
+  if (noteEditorState.saveTimer) { clearTimeout(noteEditorState.saveTimer); noteEditorState.saveTimer = null; }
+  if (!noteEditorState.isDirty) return;
+  const noteId = noteEditorState.noteId;
+  if (!noteId) return;
+  const n = getNote(noteId);
+  if (!n) return;
+
+  const titleEl = document.getElementById('note-title-input');
+  const contentEl = document.getElementById('note-content');
+  if (!titleEl || !contentEl) return;
+
+  const newTitle = titleEl.value.trim() || 'Untitled';
+  const newContent = contentEl.innerHTML || '';
+
+  n.title = newTitle;
+  n.content = newContent;
+  n.updated_at = now();
+  noteEditorState.isDirty = false;
+  noteEditorState.lastSavedAt = n.updated_at;
+
+  saveState();
+  // Single op per flush — not per keystroke
+  enqueueOp({ type: 'UPDATE_NOTE', payload: { id: n.id, title: n.title, content: n.content, updated_at: n.updated_at } });
+  setNoteSaveStatus('saved');
+  console.log('[NoteEditor] Autosaved note:', noteId);
+
+  // Refresh note lists without closing editor
+  if (projectNavStack.length) renderProject(projectNavStack[projectNavStack.length - 1]);
+}
+
+function setNoteSaveStatus(status) {
+  const el = document.getElementById('note-save-status');
+  if (!el) return;
+  if (status === 'saving') { el.textContent = 'Saving…'; el.className = 'save-status saving'; }
+  else { el.textContent = 'Saved'; el.className = 'save-status saved'; }
+}
+
+function formatCmd(cmd) {
+  try {
+    const contentEl = document.getElementById('note-content');
+    if (contentEl) contentEl.focus();
+    const ok = document.execCommand(cmd, false, null);
+    if (!ok) console.warn('[Editor] execCommand returned false for:', cmd);
+    scheduleNoteAutosave();
+  } catch (e) {
+    console.error('[Editor] formatCmd error:', cmd, e);
   }
 }
 
 function closeNoteEditor() {
+  if (noteEditorState.isDirty) {
+    flushNoteAutosave();
+  }
   document.getElementById('note-editor').style.display = 'none';
-}
-
-function saveNote(noteId) {
-  const n = getNote(noteId);
-  if (!n) return;
-  const titleEl = document.getElementById('note-title-input');
-  const contentEl = document.getElementById('note-content');
-  n.title = titleEl?.value.trim() || 'Untitled';
-  n.content = contentEl?.value || '';
-  n.updated_at = now();
-  saveState();
-  enqueueOp({ type: 'UPDATE_NOTE', payload: { id: n.id, title: n.title, content: n.content, updated_at: n.updated_at } });
-  showToast('Note saved');
-  if (projectNavStack.length) renderProject(projectNavStack[projectNavStack.length - 1]);
+  noteEditorState.noteId = null;
+  noteEditorState.isDirty = false;
+  if (noteEditorState.saveTimer) { clearTimeout(noteEditorState.saveTimer); noteEditorState.saveTimer = null; }
+  console.log('[NoteEditor] Closed');
 }
 
 function toggleFindBar(query='') {
@@ -1344,17 +1606,17 @@ function toggleFindBar(query='') {
 
 function updateNoteFind() {
   const query = document.getElementById('note-find-input')?.value || '';
-  const content = document.getElementById('note-content')?.value || '';
   noteEditorState.findMatches = [];
   if (query.length < 1) { updateFindCount(); return; }
+  // Search plain text of content
+  const contentEl = document.getElementById('note-content');
+  const text = contentEl ? (contentEl.innerText || contentEl.textContent || '') : '';
   const re = new RegExp(escapeRe(query), 'gi');
   let m;
-  while ((m = re.exec(content)) !== null) {
-    noteEditorState.findMatches.push(m.index);
-  }
+  while ((m = re.exec(text)) !== null) noteEditorState.findMatches.push(m.index);
   noteEditorState.findIdx = 0;
   updateFindCount();
-  scrollToMatch(0);
+  if (noteEditorState.findMatches.length) scrollToMatchRich(query, 0);
 }
 
 function noteFind(dir) {
@@ -1362,24 +1624,43 @@ function noteFind(dir) {
   if (!matches.length) return;
   noteEditorState.findIdx = (noteEditorState.findIdx + dir + matches.length) % matches.length;
   updateFindCount();
-  scrollToMatch(noteEditorState.findIdx);
+  scrollToMatchRich(document.getElementById('note-find-input')?.value || '', noteEditorState.findIdx);
 }
 
 function noteFindKey(e) {
   if (e.key === 'Enter') noteFind(e.shiftKey ? -1 : 1);
 }
 
-function scrollToMatch(idx) {
-  const matches = noteEditorState.findMatches;
-  if (!matches.length) return;
-  const pos = matches[idx];
-  const ta = document.getElementById('note-content');
-  if (!ta) return;
-  ta.focus();
-  ta.setSelectionRange(pos, pos + (document.getElementById('note-find-input')?.value.length || 0));
-  // Scroll textarea to selection
-  const ratio = pos / ta.value.length;
-  ta.scrollTop = ratio * ta.scrollHeight;
+function scrollToMatchRich(query, idx) {
+  if (!query) return;
+  // Use window.find for rich text — broadly supported on Chrome/Safari/Firefox
+  const contentEl = document.getElementById('note-content');
+  if (!contentEl) return;
+  contentEl.focus();
+  // window.find(query, caseSensitive, backwards, wrapAround, wholeWord, searchInFrames, showDialog)
+  try {
+    // Reset to top of content by collapsing selection
+    const sel = window.getSelection();
+    if (sel) sel.collapse(contentEl, 0);
+    // Step forward to the right match index
+    for (let i = 0; i <= idx; i++) {
+      const found = window.find(query, false, false, true, false, false, false);
+      if (!found) break;
+    }
+    // Scroll selection into view
+    const selEl = window.getSelection();
+    if (selEl && selEl.rangeCount) {
+      const range = selEl.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      const body = document.getElementById('note-body');
+      if (body && rect.top) {
+        const bodyRect = body.getBoundingClientRect();
+        body.scrollTop += rect.top - bodyRect.top - bodyRect.height / 2;
+      }
+    }
+  } catch (e) {
+    console.warn('[NoteFind] window.find failed:', e);
+  }
 }
 
 function updateFindCount() {
@@ -1407,8 +1688,7 @@ function showNoteMenu(event, noteId) {
 function archiveNote(noteId) {
   const n = getNote(noteId);
   if (!n) return;
-  n.is_archived = true;
-  n.updated_at = now();
+  n.is_archived = true; n.updated_at = now();
   saveState();
   enqueueOp({ type: 'ARCHIVE_NOTE', payload: { id: noteId } });
   refreshCurrentView();
@@ -1417,8 +1697,7 @@ function archiveNote(noteId) {
 function unarchiveNote(noteId) {
   const n = getNote(noteId);
   if (!n) return;
-  n.is_archived = false;
-  n.updated_at = now();
+  n.is_archived = false; n.updated_at = now();
   saveState();
   enqueueOp({ type: 'UNARCHIVE_NOTE', payload: { id: noteId } });
   renderArchive();
@@ -1521,8 +1800,7 @@ function showTaskMenu(event, taskId) {
 function archiveTask(taskId) {
   const t = getTask(taskId);
   if (!t) return;
-  t.is_archived = true;
-  t.updated_at = now();
+  t.is_archived = true; t.updated_at = now();
   saveState();
   enqueueOp({ type: 'ARCHIVE_TASK', payload: { id: taskId } });
   refreshCurrentView();
@@ -1531,8 +1809,7 @@ function archiveTask(taskId) {
 function unarchiveTask(taskId) {
   const t = getTask(taskId);
   if (!t) return;
-  t.is_archived = false;
-  t.updated_at = now();
+  t.is_archived = false; t.updated_at = now();
   saveState();
   enqueueOp({ type: 'UNARCHIVE_TASK', payload: { id: taskId } });
   renderArchive();
@@ -1588,13 +1865,12 @@ function showArchiveTaskMenu(event, taskId) {
   ]);
 }
 
-// ---- REFRESH ----
 function refreshCurrentView() {
   if (currentTab === 'home' && projectNavStack.length === 0) renderHome();
   else if (projectNavStack.length > 0) renderProject(projectNavStack[projectNavStack.length - 1]);
   else if (currentTab === 'todo') renderTodo();
   else if (currentTab === 'archive') renderArchive();
-  else if (currentTab === 'search') renderSearch();
+  else if (currentTab === 'search') { /* don't re-run search on data changes */ }
   else if (currentTab === 'settings') renderSettings();
 }
 
@@ -1602,7 +1878,6 @@ function refreshCurrentView() {
 function showModal({ title, fields, onSave }) {
   const container = document.getElementById('modal-container');
   const fieldsHtml = fields.map(f => {
-    const val = f.value !== undefined ? `value="${esc(f.value)}"` : '';
     if (f.type === 'textarea') {
       return `<div class="form-group"><label class="form-label">${esc(f.label)}</label>
         <textarea class="form-textarea" id="modal-field-${f.id}" placeholder="${esc(f.label)}">${esc(f.value||'')}</textarea></div>`;
@@ -1612,29 +1887,35 @@ function showModal({ title, fields, onSave }) {
       return `<div class="form-group"><label class="form-label">${esc(f.label)}</label>
         <select class="form-select" id="modal-field-${f.id}">${opts}</select></div>`;
     }
+    const val = f.value !== undefined ? `value="${esc(f.value)}"` : '';
     return `<div class="form-group"><label class="form-label">${esc(f.label)}</label>
       <input class="form-input" type="${f.type||'text'}" id="modal-field-${f.id}" ${val} placeholder="${esc(f.label)}"></div>`;
   }).join('');
 
   container.innerHTML = `
-    <div class="modal-overlay" onclick="closeModal(event)">
-      <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-overlay" id="modal-overlay-bg">
+      <div class="modal-sheet">
         <div class="modal-title">${esc(title)}</div>
         ${fieldsHtml}
         <div class="modal-actions">
-          <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-          <button class="btn btn-primary" onclick="submitModal()">Save</button>
+          <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+          <button class="btn btn-primary" id="modal-save-btn">Save</button>
         </div>
       </div>
     </div>
   `;
   window._modalCallback = onSave;
   window._modalFields = fields;
-  // focus first input
-  setTimeout(() => {
-    const first = container.querySelector('input, textarea');
-    if (first) first.focus();
-  }, 50);
+
+  // Explicit event listeners — avoids inline onclick issues
+  document.getElementById('modal-overlay-bg').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+  document.getElementById('modal-cancel-btn').addEventListener('click', () => closeModal());
+  document.getElementById('modal-save-btn').addEventListener('click', () => submitModal());
+
+  setTimeout(() => { const first = container.querySelector('input, textarea'); if (first) first.focus(); }, 50);
+  console.log('[Modal] Opened:', title);
 }
 
 function submitModal() {
@@ -1652,11 +1933,9 @@ function submitModal() {
       return;
     }
   }
-
-  // *** FIX: Capture callback BEFORE closeModal() nulls it ***
+  // *** CRITICAL: capture callback BEFORE closeModal() nulls it ***
   const callback = window._modalCallback;
   closeModal();
-
   if (callback) {
     try {
       callback(data);
@@ -1665,12 +1944,11 @@ function submitModal() {
       showToast('Error: ' + error.message);
     }
   } else {
-    console.warn('[Modal] No callback registered — nothing to execute.');
+    console.warn('[Modal] No callback registered');
   }
 }
 
-function closeModal(event) {
-  if (event && event.target !== event.currentTarget) return;
+function closeModal() {
   document.getElementById('modal-container').innerHTML = '';
   window._modalCallback = null;
   window._modalFields = null;
@@ -1679,23 +1957,25 @@ function closeModal(event) {
 function showConfirm(message, onConfirm) {
   const container = document.getElementById('modal-container');
   container.innerHTML = `
-    <div class="modal-overlay center" onclick="closeModal(event)">
-      <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-overlay center" id="confirm-overlay-bg">
+      <div class="modal-sheet">
         <div class="modal-title">Confirm</div>
         <p style="font-size:14px;color:var(--text2);margin-bottom:16px">${esc(message)}</p>
         <div class="modal-actions">
-          <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-          <button class="btn btn-danger" onclick="confirmAction()">Confirm</button>
+          <button class="btn btn-secondary" id="confirm-cancel-btn">Cancel</button>
+          <button class="btn btn-danger" id="confirm-ok-btn">Confirm</button>
         </div>
       </div>
     </div>
   `;
-  window._confirmCallback = onConfirm;
-}
-
-function confirmAction() {
-  closeModal();
-  if (window._confirmCallback) window._confirmCallback();
+  document.getElementById('confirm-overlay-bg').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+  document.getElementById('confirm-cancel-btn').addEventListener('click', () => closeModal());
+  document.getElementById('confirm-ok-btn').addEventListener('click', () => {
+    closeModal();
+    if (onConfirm) { try { onConfirm(); } catch(e) { console.error('[Confirm] callback error', e); } }
+  });
 }
 
 // ---- CONTEXT MENU ----
@@ -1704,28 +1984,23 @@ function showContextMenu(event, items) {
   const container = document.getElementById('context-menu-container');
   const menu = document.createElement('div');
   menu.className = 'context-menu';
-  menu.innerHTML = items.map((item, i) =>
-    `<div class="context-menu-item ${item.danger?'danger':''}" data-idx="${i}">
-      ${item.icon || ''} <span>${esc(item.label)}</span>
-    </div>`
-  ).join('');
+  items.forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'context-menu-item' + (item.danger ? ' danger' : '');
+    el.innerHTML = (item.icon || '') + `<span>${esc(item.label)}</span>`;
+    el.addEventListener('click', () => { closeContextMenu(); item.action(); });
+    menu.appendChild(el);
+  });
   container.appendChild(menu);
 
-  // Position
   const vw = window.innerWidth, vh = window.innerHeight;
-  let x = event.clientX, y = event.clientY;
-  menu.style.left = x + 'px';
-  menu.style.top = y + 'px';
-  // Adjust if off-screen
+  menu.style.left = event.clientX + 'px';
+  menu.style.top = event.clientY + 'px';
   setTimeout(() => {
     const r = menu.getBoundingClientRect();
     if (r.right > vw) menu.style.left = (vw - r.width - 8) + 'px';
-    if (r.bottom > vh) menu.style.top = (y - r.height) + 'px';
+    if (r.bottom > vh) menu.style.top = (event.clientY - r.height) + 'px';
   }, 0);
-
-  menu.querySelectorAll('.context-menu-item').forEach((el, i) => {
-    el.addEventListener('click', () => { closeContextMenu(); items[i].action(); });
-  });
 
   setTimeout(() => document.addEventListener('click', closeContextMenu, { once: true }), 0);
 }
@@ -1740,17 +2015,14 @@ function showToast(msg, duration = 2500) {
   if (existing) existing.remove();
   const el = document.createElement('div');
   el.id = 'toast';
-  el.style.cssText = `position:fixed;bottom:calc(var(--tab-h) + var(--safe-bottom) + 60px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:8px 16px;border-radius:20px;font-size:14px;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;`;
+  el.style.cssText = `position:fixed;bottom:calc(var(--tab-h) + var(--safe-bottom) + 60px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:8px 16px;border-radius:20px;font-size:14px;z-index:9999;pointer-events:none;white-space:nowrap;max-width:90vw;`;
   el.textContent = msg;
   document.body.appendChild(el);
   setTimeout(() => el.remove(), duration);
 }
 
 // ---- SEARCH ----
-function handleSearchKey(event) {
-  if (event.key === 'Enter') doSearch();
-}
-
+function handleSearchKey(event) { if (event.key === 'Enter') doSearch(); }
 function doSearch() {
   const q = document.getElementById('search-input')?.value || '';
   if (!q.trim()) return;
@@ -1761,61 +2033,34 @@ function doSearch() {
 // ---- SETTINGS ----
 function promptSetting(key, label, current, type='text') {
   const val = prompt(label + (current ? ` (current: ${type==='password'?'[hidden]':current})` : ''), type==='password'?'':current);
-  if (val !== null) {
-    prefs[key] = val.trim();
-    savePrefs();
-    renderSettings();
-    showToast('Saved');
-  }
+  if (val !== null) { prefs[key] = val.trim(); savePrefs(); renderSettings(); showToast('Saved'); }
 }
 
 function testConnection() {
   if (!prefs.scriptUrl) { showToast('Set Apps Script URL first'); return; }
-  // Remind user to use /exec not /dev URL.
   if (prefs.scriptUrl.includes('/dev')) {
     showToast('⚠ Use the /exec URL, not /dev');
     console.warn('[Sync] /dev URL detected — switch to /exec deployment URL');
   }
   showToast('Testing…');
-  // token + clientId are injected by apiCall() automatically.
   apiCall({ action: 'ping' })
     .then(r => {
-      if (r.ok) {
-        showToast('✓ Connected successfully');
-        console.log('[Sync] Ping OK');
-      } else {
-        showToast('✗ Error: ' + (r.error || 'Unknown'));
-        console.error('[Sync] Ping failed:', r.error);
-      }
+      if (r.ok) { showToast('✓ Connected successfully'); console.log('[Sync] Ping OK'); }
+      else { showToast('✗ Error: ' + (r.error||'Unknown')); console.error('[Sync] Ping failed:', r.error); }
     })
-    .catch(e => {
-      showToast('✗ Fetch failed — check URL and CORS');
-      console.error('[Sync] testConnection error:', e);
-    });
+    .catch(e => { showToast('✗ Fetch failed — check URL and CORS'); console.error('[Sync] testConnection error:', e); });
 }
 
-function flushQueue() {
-  processSyncQueue();
-  showToast('Flushing queue…');
-}
+function flushQueue() { processSyncQueue(); showToast('Flushing queue…'); }
 
 function clearQueue() {
   showConfirm('Clear all pending sync operations? Unsynced changes may be lost.', () => {
-    syncQueue = [];
-    saveQueue();
-    updateSyncIndicator();
-    showToast('Queue cleared');
-    renderSettings();
+    syncQueue = []; saveQueue(); updateSyncIndicator(); showToast('Queue cleared'); renderSettings();
   });
 }
 
 function clearToken() {
-  showConfirm('Clear API token?', () => {
-    prefs.apiToken = '';
-    savePrefs();
-    renderSettings();
-    showToast('Token cleared');
-  });
+  showConfirm('Clear API token?', () => { prefs.apiToken = ''; savePrefs(); renderSettings(); showToast('Token cleared'); });
 }
 
 function forceResync() {
@@ -1826,29 +2071,22 @@ function forceResync() {
       state.projects = r.data.projects || state.projects;
       state.notes = r.data.notes || state.notes;
       state.tasks = r.data.tasks || state.tasks;
-      saveState();
-      refreshCurrentView();
-      showToast('Resync complete');
-    } else {
-      showToast('Resync failed: ' + (r.error||'Unknown'));
-    }
+      saveState(); refreshCurrentView(); showToast('Resync complete');
+    } else { showToast('Resync failed: ' + (r.error||'Unknown')); }
   }).catch(e => showToast('Resync failed: ' + e.message));
 }
 
 // ============================================================
 // <!-- DRAG AND DROP ORDERING -->
 // ============================================================
-
 function setupDragDrop(containerId, type) {
   const container = document.getElementById(containerId);
   if (!container) return;
-
   let dragSrcEl = null;
 
   container.querySelectorAll('[draggable="true"]').forEach(el => {
     el.addEventListener('dragstart', function(e) {
-      dragSrcEl = this;
-      this.classList.add('dragging');
+      dragSrcEl = this; this.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', this.dataset.id);
     });
@@ -1857,8 +2095,7 @@ function setupDragDrop(containerId, type) {
       container.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over'));
     });
     el.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
       container.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over'));
       if (this !== dragSrcEl) this.classList.add('drag-over');
     });
@@ -1872,13 +2109,10 @@ function setupDragDrop(containerId, type) {
     });
   });
 
-  // Touch drag support (basic)
+  // Touch drag
   let touchDragId = null, touchTargetId = null;
   container.querySelectorAll('[draggable="true"]').forEach(el => {
-    el.addEventListener('touchstart', function(e) {
-      touchDragId = this.dataset.id;
-      this.classList.add('dragging');
-    }, { passive: true });
+    el.addEventListener('touchstart', function() { touchDragId = this.dataset.id; this.classList.add('dragging'); }, { passive: true });
     el.addEventListener('touchmove', function(e) {
       const touch = e.touches[0];
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -1887,35 +2121,21 @@ function setupDragDrop(containerId, type) {
     }, { passive: true });
     el.addEventListener('touchend', function() {
       this.classList.remove('dragging');
-      if (touchDragId && touchTargetId && touchDragId !== touchTargetId) {
-        reorderItems(type, containerId, touchDragId, touchTargetId);
-      }
+      if (touchDragId && touchTargetId && touchDragId !== touchTargetId) reorderItems(type, containerId, touchDragId, touchTargetId);
       touchDragId = null; touchTargetId = null;
     });
   });
 }
 
 function reorderItems(type, containerId, srcId, tgtId) {
-  let arr;
-  if (type === 'project') {
-    arr = state.projects;
-  } else if (type === 'note') {
-    arr = state.notes;
-  } else if (type === 'task') {
-    arr = state.tasks;
-  } else return;
-
+  let arr = type === 'project' ? state.projects : type === 'note' ? state.notes : state.tasks;
   const src = arr.find(x => x.id === srcId);
   const tgt = arr.find(x => x.id === tgtId);
   if (!src || !tgt) return;
 
-  // Get siblings (same parent context)
   let siblings;
-  if (type === 'project') {
-    siblings = arr.filter(x => x.parent_id === src.parent_id && !x.is_archived).sort((a,b) => a.sort_order - b.sort_order);
-  } else {
-    siblings = arr.filter(x => x.project_id === src.project_id && !x.is_archived).sort((a,b) => a.sort_order - b.sort_order);
-  }
+  if (type === 'project') siblings = arr.filter(x => x.parent_id === src.parent_id && !x.is_archived).sort((a,b) => a.sort_order - b.sort_order);
+  else siblings = arr.filter(x => x.project_id === src.project_id && !x.is_archived).sort((a,b) => a.sort_order - b.sort_order);
 
   const srcIdx = siblings.findIndex(x => x.id === srcId);
   const tgtIdx = siblings.findIndex(x => x.id === tgtId);
@@ -1933,16 +2153,8 @@ function reorderItems(type, containerId, srcId, tgtId) {
 // ============================================================
 // <!-- SYNC QUEUE -->
 // ============================================================
-
 function enqueueOp(op) {
-  const syncOp = {
-    opId: genId(),
-    type: op.type,
-    payload: op.payload,
-    timestamp: now(),
-    retryCount: 0,
-    clientId: prefs.clientId,
-  };
+  const syncOp = { opId: genId(), type: op.type, payload: op.payload, timestamp: now(), retryCount: 0, clientId: prefs.clientId };
   syncQueue.push(syncOp);
   saveQueue();
   updateSyncIndicator();
@@ -1955,23 +2167,15 @@ function scheduleSyncFlush(delay = 500) {
 }
 
 async function processSyncQueue() {
-  if (!prefs.scriptUrl || syncQueue.length === 0) {
-    updateSyncIndicator();
-    return;
-  }
+  if (!prefs.scriptUrl || syncQueue.length === 0) { updateSyncIndicator(); return; }
   updateSyncIndicator('syncing');
-
   const op = syncQueue[0];
   try {
     const result = await apiCall({ action: 'applyOp', op });
     if (result.ok) {
-      syncQueue.shift();
-      saveQueue();
-      updateSyncIndicator();
+      syncQueue.shift(); saveQueue(); updateSyncIndicator();
       if (syncQueue.length > 0) scheduleSyncFlush(100);
-    } else {
-      throw new Error(result.error || 'Server error');
-    }
+    } else { throw new Error(result.error || 'Server error'); }
   } catch (e) {
     op.retryCount = (op.retryCount || 0) + 1;
     saveQueue();
@@ -1985,43 +2189,25 @@ function updateSyncIndicator(state_='') {
   const el = document.getElementById('sync-indicator');
   const text = document.getElementById('sync-text');
   if (!el || !text) return;
-
   const pending = syncQueue.length;
-  if (state_ === 'syncing') {
-    el.className = 'syncing';
-    text.textContent = 'Syncing…';
-  } else if (!navigator.onLine || state_ === 'offline') {
-    el.className = 'offline';
-    text.textContent = pending ? `Offline (${pending})` : 'Offline';
-  } else if (pending > 0) {
-    el.className = 'syncing';
-    text.textContent = `${pending} pending`;
-  } else {
-    el.className = 'synced';
-    text.textContent = 'Synced';
-  }
-
-  // Hide indicator if no script configured
+  if (state_ === 'syncing') { el.className = 'syncing'; text.textContent = 'Syncing…'; }
+  else if (!navigator.onLine || state_ === 'offline') { el.className = 'offline'; text.textContent = pending ? `Offline (${pending})` : 'Offline'; }
+  else if (pending > 0) { el.className = 'syncing'; text.textContent = `${pending} pending`; }
+  else { el.className = 'synced'; text.textContent = 'Synced'; }
   el.style.display = prefs.scriptUrl ? 'flex' : 'none';
 }
 
 // ============================================================
 // <!-- API CLIENT -->
 // ============================================================
-
 async function apiCall(body) {
   if (!prefs.scriptUrl) throw new Error('No Apps Script URL configured');
-  // Merge auth into body — no custom headers so no CORS preflight is triggered.
-  const payload = {
-    ...body,
-    token: prefs.apiToken,
-    clientId: prefs.clientId,
-  };
+  // Merge auth into body — text/plain avoids CORS preflight
+  const payload = { ...body, token: prefs.apiToken, clientId: prefs.clientId };
   let resp;
   try {
     resp = await fetch(prefs.scriptUrl, {
       method: 'POST',
-      // text/plain keeps the request "simple" — no preflight OPTIONS request.
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload),
     });
@@ -2037,214 +2223,22 @@ async function apiCall(body) {
 }
 
 // ============================================================
-// <!-- SETTINGS + SETUP GUIDE CONTENT -->
-// ============================================================
-// (Rendered inline above in renderSettings())
-
-// Apps Script template (informational):
-const APPS_SCRIPT_TEMPLATE = `
-// ===== WorkSpace Apps Script =====
-// Paste this in Extensions > Apps Script
-
-const API_TOKEN = 'YOUR_SECRET_TOKEN_HERE';
-const SS = SpreadsheetApp.getActiveSpreadsheet();
-
-function doPost(e) {
-  try {
-    // Apps Script receives text/plain body in e.postData.contents regardless of content-type.
-    const body = JSON.parse(e.postData.contents);
-    const action = body.action;
-
-    // ping is unauthenticated so the client can test connectivity before storing a token.
-    if (action === 'ping') {
-      return jsonResp({ ok: true });
-    }
-
-    if (!validateToken(body)) {
-      return jsonResp({ ok: false, error: 'Unauthorized' });
-    }
-
-    if (action === 'applyOp') return jsonResp(applyOp(body.op));
-    if (action === 'getAll')  return jsonResp({ ok: true, data: getAllData() });
-
-    return jsonResp({ ok: false, error: 'Unknown action: ' + action });
-
-  } catch (err) {
-    console.error('doPost exception:', err);          // visible in Apps Script execution log
-    return jsonResp({ ok: false, error: err.toString() });
-  }
-}
-
-function validateToken(body) {
-  // Token travels in the request body, never in headers.
-  return typeof body.token === 'string' && body.token === API_TOKEN;
-}
-
-function jsonResp(data) {
-  return ContentService
-    .createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-function getAllData() {
-  return {
-    projects: sheetToObjects('Projects'),
-    notes: sheetToObjects('Notes'),
-    tasks: sheetToObjects('Tasks'),
-  };
-}
-
-function sheetToObjects(sheetName) {
-  const sheet = SS.getSheetByName(sheetName);
-  if (!sheet) return [];
-  const data = sheet.getDataRange().getValues();
-  if (data.length < 2) return [];
-  const headers = data[0];
-  return data.slice(1).map(row => {
-    const obj = {};
-    headers.forEach((h, i) => { obj[h] = row[i]; });
-    return obj;
-  });
-}
-
-function applyOp(op) {
-  // Log op for idempotency
-  const opLog = SS.getSheetByName('OpLog');
-  const existing = opLog.getDataRange().getValues().slice(1).find(r => r[0] === op.opId);
-  if (existing) return { ok: true, deduplicated: true };
-  opLog.appendRow([op.opId, op.type, JSON.stringify(op.payload), op.timestamp, op.clientId]);
-
-  const { type, payload } = op;
-  switch(type) {
-    case 'CREATE_PROJECT': return upsertRow('Projects', payload);
-    case 'UPDATE_PROJECT': return updateRow('Projects', payload);
-    case 'DELETE_PROJECT': {
-      for (const id of (payload.cascade_ids || [payload.id])) deleteRow('Projects', id);
-      for (const id of (payload.cascade_ids || [payload.id])) {
-        deleteRowsWhere('Notes', 'project_id', id);
-        deleteRowsWhere('Tasks', 'project_id', id);
-      }
-      return { ok: true };
-    }
-    case 'TOGGLE_COMPLETE_PROJECT': {
-      for (const id of (payload.cascade_ids || [payload.id])) {
-        updateRow('Projects', { id, is_completed: payload.is_completed, completed_at: payload.completed_at });
-      }
-      return { ok: true };
-    }
-    case 'ARCHIVE_PROJECT': {
-      for (const id of (payload.cascade_ids || [payload.id])) {
-        updateRow('Projects', { id, is_archived: true, archived_at: new Date().toISOString() });
-        updateRowsWhere('Notes', 'project_id', id, { is_archived: true });
-        updateRowsWhere('Tasks', 'project_id', id, { is_archived: true });
-      }
-      return { ok: true };
-    }
-    case 'UNARCHIVE_PROJECT': return updateRow('Projects', { id: payload.id, is_archived: false, archived_at: '' });
-    case 'CREATE_NOTE': return upsertRow('Notes', payload);
-    case 'UPDATE_NOTE': return updateRow('Notes', payload);
-    case 'ARCHIVE_NOTE': return updateRow('Notes', { id: payload.id, is_archived: true });
-    case 'UNARCHIVE_NOTE': return updateRow('Notes', { id: payload.id, is_archived: false });
-    case 'DELETE_NOTE': { deleteRow('Notes', payload.id); return { ok: true }; }
-    case 'CREATE_TASK': return upsertRow('Tasks', payload);
-    case 'UPDATE_TASK': return updateRow('Tasks', payload);
-    case 'TOGGLE_COMPLETE_TASK': return updateRow('Tasks', { id: payload.id, is_done: payload.is_done, completed_at: payload.completed_at });
-    case 'ARCHIVE_TASK': return updateRow('Tasks', { id: payload.id, is_archived: true });
-    case 'UNARCHIVE_TASK': return updateRow('Tasks', { id: payload.id, is_archived: false });
-    case 'DELETE_TASK': { deleteRow('Tasks', payload.id); return { ok: true }; }
-    case 'REORDER': {
-      const sheetName = payload.item_type === 'project' ? 'Projects' : payload.item_type === 'note' ? 'Notes' : 'Tasks';
-      payload.ids.forEach((id, i) => updateRow(sheetName, { id, sort_order: i }));
-      return { ok: true };
-    }
-    default: return { ok: false, error: 'Unknown op type: ' + type };
-  }
-}
-
-function upsertRow(sheetName, obj) {
-  const sheet = SS.getSheetByName(sheetName);
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  const row = headers.map(h => obj[h] !== undefined ? obj[h] : '');
-  sheet.appendRow(row);
-  return { ok: true };
-}
-
-function updateRow(sheetName, updates) {
-  const sheet = SS.getSheetByName(sheetName);
-  const data = sheet.getDataRange().getValues();
-  const headers = data[0];
-  const idCol = headers.indexOf('id');
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][idCol] === updates.id) {
-      for (const [key, val] of Object.entries(updates)) {
-        const col = headers.indexOf(key);
-        if (col > -1) sheet.getRange(i+1, col+1).setValue(val);
-      }
-      return { ok: true };
-    }
-  }
-  return { ok: false, error: 'Row not found: ' + updates.id };
-}
-
-function deleteRow(sheetName, id) {
-  const sheet = SS.getSheetByName(sheetName);
-  const data = sheet.getDataRange().getValues();
-  const idCol = data[0].indexOf('id');
-  for (let i = data.length - 1; i >= 1; i--) {
-    if (data[i][idCol] === id) { sheet.deleteRow(i+1); return; }
-  }
-}
-
-function deleteRowsWhere(sheetName, col, val) {
-  const sheet = SS.getSheetByName(sheetName);
-  const data = sheet.getDataRange().getValues();
-  const colIdx = data[0].indexOf(col);
-  for (let i = data.length - 1; i >= 1; i--) {
-    if (data[i][colIdx] === val) sheet.deleteRow(i+1);
-  }
-}
-
-function updateRowsWhere(sheetName, col, val, updates) {
-  const sheet = SS.getSheetByName(sheetName);
-  const data = sheet.getDataRange().getValues();
-  const headers = data[0];
-  const colIdx = headers.indexOf(col);
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][colIdx] === val) {
-      for (const [k, v] of Object.entries(updates)) {
-        const c = headers.indexOf(k);
-        if (c > -1) sheet.getRange(i+1, c+1).setValue(v);
-      }
-    }
-  }
-}
-`;
-
-// ============================================================
 // BOOT
 // ============================================================
-
-window.addEventListener('online', () => { isOnline = true; updateSyncIndicator(); scheduleSyncFlush(200); });
+window.addEventListener('online',  () => { isOnline = true;  updateSyncIndicator(); scheduleSyncFlush(200); });
 window.addEventListener('offline', () => { isOnline = false; updateSyncIndicator(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') scheduleSyncFlush(300); });
 
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') scheduleSyncFlush(300);
-});
-
-// Keyboard shortcuts
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    closeModal();
-    closeContextMenu();
-    const editor = document.getElementById('note-editor');
-    if (editor && editor.style.display !== 'none') closeNoteEditor();
+    closeModal(); closeContextMenu();
+    const editorEl = document.getElementById('note-editor');
+    if (editorEl && editorEl.style.display !== 'none') closeNoteEditor();
   }
   if ((e.ctrlKey || e.metaKey) && e.key === 's') {
     e.preventDefault();
-    const editor = document.getElementById('note-editor');
-    if (editor && editor.style.display !== 'none') {
-      saveNote(noteEditorState.noteId);
-    }
+    const editorEl = document.getElementById('note-editor');
+    if (editorEl && editorEl.style.display !== 'none') flushNoteAutosave();
   }
 });
 
@@ -2252,10 +2246,11 @@ function init() {
   loadPrefs();
   loadState();
   loadQueue();
+  loadTodoPrefs();
   updateSyncIndicator();
   switchTab('home');
-  // Start sync
   if (syncQueue.length > 0) scheduleSyncFlush(1000);
+  console.log('[App] Initialized. Projects:', state.projects.length, 'Notes:', state.notes.length, 'Tasks:', state.tasks.length);
 }
 
 init();
