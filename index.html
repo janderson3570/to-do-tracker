@@ -737,7 +737,10 @@ function nextSortOrder(items) {
 }
 
 function isTaskOverdue(t) {
-  return !!(t.deadline && !t.is_done && new Date(t.deadline) < new Date());
+  if (!t.deadline || t.is_done) return false;
+  const [y, m, d] = t.deadline.split('-').map(Number);
+  const due = new Date(y, m - 1, d, 23, 59, 59); // end of local day — no UTC shift
+  return due < new Date();
 }
 
 // ============================================================
@@ -1092,10 +1095,12 @@ function renderTaskRow(t, ownerProjectId) {
   `;
 }
 
-function formatDeadline(d) {
-  const date = new Date(d);
-  if (isNaN(date)) return '';
-  return date.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+function formatDeadline(yyyyMmDd) {
+  if (!yyyyMmDd) return '';
+  const [y, m, d] = yyyyMmDd.split('-').map(Number);
+  if (!y || !m || !d) return '';
+  const date = new Date(y, m - 1, d); // local date — no UTC shift
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 // ---- TO-DO TAB (enhanced) ----
